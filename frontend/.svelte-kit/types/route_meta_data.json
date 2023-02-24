@@ -1,3 +1,9 @@
 {
-	"/": []
+	"/": [],
+	"/app": [
+		"src/routes/app/+layout.ts"
+	],
+	"/stats": [
+		"src/routes/stats/+page.ts"
+	]
 }

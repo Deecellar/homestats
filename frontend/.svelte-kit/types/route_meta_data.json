@@ -1,9 +1,16 @@
 {
+	"/(marketing)": [],
 	"/": [],
-	"/app": [
-		"src/routes/app/+layout.ts"
+	"/(marketing)/company": [],
+	"/(marketing)/contact": [],
+	"/(admin)/login": [],
+	"/(admin)/register": [],
+	"/(app)/stats": [
+		"src/routes/(app)/stats/+page.ts",
+		"src/routes/(app)/stats/+layout.ts",
+		"src/routes/(app)/stats/+layout.ts"
 	],
-	"/stats": [
-		"src/routes/stats/+page.ts"
+	"/(app)/stats/home/[id=integer]": [
+		"src/routes/(app)/stats/+layout.ts"
 	]
 }

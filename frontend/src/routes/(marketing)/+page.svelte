@@ -1,0 +1,1 @@
+<a class="text-2xl text-blue-700 bold underline" href="stats/">Go to stats, PAGE WIP</a>

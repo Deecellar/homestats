@@ -79,6 +79,10 @@ public async Task<Response<AuthenticationResponse>> AuthenticateAsync(Authentica
                 var result = await _userManager.CreateAsync(user, request.Password);
                 if (result.Succeeded)
                 {
+                    var registeredUser = await _userManager.FindByEmailAsync(request.Email);
+                    registeredUser.EmailConfirmed = true;
+                    await _userManager.UpdateAsync(registeredUser);
+
                     return new Response<string>($"User Registered. Please confirm your account by using this link {1}", user.Id.ToString());
                 }
                 else

@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text.Json;
+using backend.Data;
 using backend.Models.Common;
 using backend.Wrappers;
 
@@ -9,7 +10,7 @@ namespace backend.Middleware
     {
         private readonly RequestDelegate _next;
 
-        public ErrorHandlerMiddleware(RequestDelegate next)
+        public ErrorHandlerMiddleware(RequestDelegate next )
         {
             _next = next;
         }

@@ -6,6 +6,7 @@ namespace backend.Models.Aggregators
 {
     public record HouseAggregator
     {
+        public HouseAggregator(House house, IEnumerable<Temperature> temperatures, IEnumerable<Humidity> humidities, IEnumerable<SunExposure> sunExposures) : this(house.Id, house.CreatedAt, house.Name, house.Address, house.City, house.State, temperatures, humidities, sunExposures){}
 
         public HouseAggregator(Guid id, DateTime createdAt, string name, string address, string city, string state, IEnumerable<Temperature> temperatures, IEnumerable<Humidity> humidities, IEnumerable<SunExposure> sunExposures)
         {
@@ -80,6 +81,8 @@ namespace backend.Models.Aggregators
             SunExposures = sunExposures;
 #pragma warning restore CS8601 // Dereference of a possibly null reference.
         }
+
+            
 
 
         public House House { get; init; }

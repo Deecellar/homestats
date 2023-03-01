@@ -7,8 +7,8 @@ using System.Security.Cryptography;
 using System.Text;
 using backend.Account;
 using backend.Models.Configuration;
-using backend.Models.Identity;
 using backend.Wrappers;
+using LiteDB.Identity.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.IdentityModel.Tokens;
@@ -17,15 +17,15 @@ namespace backend.Services.Implementations
 {
     public class AccountService : IAccountService
     {
-        private readonly UserManager<User> _userManager;
-        private readonly RoleManager<Role> _roleManager;
-        private readonly SignInManager<User> _signInManager;
+        private readonly UserManager<LiteDbUser> _userManager;
+        private readonly RoleManager<LiteDbRole> _roleManager;
+        private readonly SignInManager<LiteDbUser> _signInManager;
 
         private readonly JWTSettings _jwtSettings;
 
-        public AccountService(UserManager<User> userManager,
-                              RoleManager<Role> roleManager,
-                              SignInManager<User> signInManager,
+        public AccountService(UserManager<LiteDbUser> userManager,
+                              RoleManager<LiteDbRole> roleManager,
+                              SignInManager<LiteDbUser> signInManager,
                               JWTSettings jwtSettings) { _userManager = userManager; _roleManager = roleManager; _signInManager = signInManager; _jwtSettings = jwtSettings; }
 
 
@@ -48,7 +48,7 @@ public async Task<Response<AuthenticationResponse>> AuthenticateAsync(Authentica
             JwtSecurityToken jwtSecurityToken = await GenerateJWToken(user);
             AuthenticationResponse response = new AuthenticationResponse
             {
-                Id = user.Id,
+                Id = user.Id.ToString(),
                 JWToken = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken),
                 Email = user.Email,
                 UserName = user.UserName
@@ -68,22 +68,18 @@ public async Task<Response<AuthenticationResponse>> AuthenticateAsync(Authentica
             {
                 throw new Exception($"Username '{request.UserName}' is already taken.");
             }
-            var user = new User
+            var user = new LiteDbUser
             {
                 Email = request.Email,
-                FirstName = request.FirstName,
-                LastName = request.LastName,
                 UserName = request.UserName
             };
             var userWithSameEmail = await _userManager.FindByEmailAsync(request.Email);
             if (userWithSameEmail == null)
             {
                 var result = await _userManager.CreateAsync(user, request.Password);
-                var verificationUri = await SendVerificationEmail(user, origin);
                 if (result.Succeeded)
                 {
-                    await _userManager.AddToRoleAsync(user, Roles.Basic.ToString());
-                    return new Response<string>(user.Id, $"User Registered. Please confirm your account by using this link {verificationUri}");
+                    return new Response<string>($"User Registered. Please confirm your account by using this link {1}", user.Id.ToString());
                 }
                 else
                 {
@@ -96,7 +92,7 @@ public async Task<Response<AuthenticationResponse>> AuthenticateAsync(Authentica
             }
         }
 
-        private async Task<JwtSecurityToken> GenerateJWToken(User user)
+        private async Task<JwtSecurityToken> GenerateJWToken(LiteDbUser user)
         {
 
             string ipAddress = IpHelper.GetIpAddress();
@@ -106,7 +102,7 @@ public async Task<Response<AuthenticationResponse>> AuthenticateAsync(Authentica
                 new Claim(JwtRegisteredClaimNames.Sub , user.UserName),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim(JwtRegisteredClaimNames.Email , user.Email),
-                new Claim("uid", user.Id),
+                new Claim("uid", user.Id.ToString()),
                 new Claim("ip", ipAddress)
             };
 
@@ -133,13 +129,13 @@ public async Task<Response<AuthenticationResponse>> AuthenticateAsync(Authentica
             return BitConverter.ToString(randomBytes).Replace("-", "");
         }
         
-        private async Task<string> SendVerificationEmail(User user, string origin)
+        private async Task<string> SendVerificationEmail(LiteDbUser user, string origin)
         {
             var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
             code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
             var route = "api/account/confirm-email/";
             var _enpointUri = new Uri(string.Concat($"{origin}/", route));
-            var verificationUri = QueryHelpers.AddQueryString(_enpointUri.ToString(), "userId", user.Id);
+            var verificationUri = QueryHelpers.AddQueryString(_enpointUri.ToString(), "userId", user.Id.ToString());
             verificationUri = QueryHelpers.AddQueryString(verificationUri, "code", code);
             return verificationUri;
         }
@@ -151,7 +147,7 @@ public async Task<Response<AuthenticationResponse>> AuthenticateAsync(Authentica
             var result = await _userManager.ConfirmEmailAsync(user, code);
             if(result.Succeeded)
             {
-                return new Response<string>(user.Id,  $"Account Confirmed for {user.Email}. You can now use the /api/Account/authenticate endpoint.");
+                return new Response<string>($"Account Confirmed for {user.Email}. You can now use the /api/Account/authenticate endpoint.", user.Id.ToString());
             }
             else
             {

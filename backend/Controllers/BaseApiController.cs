@@ -1,16 +1,14 @@
-using System;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
 
-namespace backend.Controllers
+namespace backend.Controllers;
+
+[ApiController]
+[Route("api/v{version:apiVersion}/[controller]")]
+public abstract class BaseApiController : ControllerBase
 {
-    [ApiController]
-    [Route("api/v{version:apiVersion}/[controller]")]
-    public abstract class BaseApiController : ControllerBase
-    {
-        private IMediator? _mediator;
-        protected IMediator Mediator => _mediator = HttpContext.RequestServices.GetService<IMediator>() ??
-                                              throw new InvalidOperationException("Mediator not found");
-    }
+    private IMediator? _mediator;
+
+    protected IMediator Mediator => _mediator = HttpContext.RequestServices.GetService<IMediator>() ??
+                                                throw new InvalidOperationException("Mediator not found");
 }

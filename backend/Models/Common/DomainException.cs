@@ -1,27 +1,23 @@
-using System;
 using System.Runtime.Serialization;
 
-namespace backend.Models.Common
+namespace backend.Models.Common;
+
+public class DomainException : Exception
 {
-    public class DomainException : Exception
+    public DomainException()
     {
-        
-        public DomainException()
-        {
-        }
+    }
 
-        public DomainException(string? message) : base(message)
-        {
-        }
+    public DomainException(string? message) : base(message)
+    {
+    }
 
 
+    public DomainException(string? message, Exception? innerException) : base(message, innerException)
+    {
+    }
 
-        public DomainException(string? message, Exception? innerException) : base(message, innerException)
-        {
-        }
-
-        protected DomainException(SerializationInfo info, StreamingContext context) : base(info, context)
-        {
-        }
+    protected DomainException(SerializationInfo info, StreamingContext context) : base(info, context)
+    {
     }
 }

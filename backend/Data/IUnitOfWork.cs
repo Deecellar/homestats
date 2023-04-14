@@ -1,16 +1,18 @@
 using LiteDB;
 
-namespace backend.Data
+namespace backend.Data;
+
+public interface IUnitOfWork
 {
-    public interface IUnitOfWork
-    {
-        #region Repositories
-        IHouseRepository HouseRepository { get; }
-        ISensorRepository SensorRepository { get; }
-        #endregion
-        ILiteDatabase Db { get; }
-         Task<bool> InitializeTransaction();
-        Task<bool> CommitTransaction();
-        Task<bool> RollbackTransaction();
-    }
+    ILiteDatabase Db { get; }
+    Task<bool> InitializeTransaction();
+    Task<bool> CommitTransaction();
+    Task<bool> RollbackTransaction();
+
+    #region Repositories
+
+    IHouseRepository HouseRepository { get; }
+    ISensorRepository SensorRepository { get; }
+
+    #endregion
 }

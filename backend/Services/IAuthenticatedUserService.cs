@@ -1,10 +1,8 @@
-using System;
 using System.Security.Claims;
 
-namespace backend.Services
+namespace backend.Services;
+
+public interface IAuthenticatedUserService
 {
-    public interface IAuthenticatedUserService
-    {
-        Claim? UserId { get; }
-    }
+    Claim? UserId { get; }
 }

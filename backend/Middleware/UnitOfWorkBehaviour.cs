@@ -1,39 +1,33 @@
-using System;
 using backend.Data;
 using MediatR;
 
-namespace backend.Middleware
+namespace backend.Middleware;
+
+public class UnitOfWorkBehaviour<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
+    where TRequest : IRequest<TResponse>
 {
-    public class UnitOfWorkBehaviour<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse> where TRequest : IRequest<TResponse>
+    private readonly IUnitOfWork _unitOfWork;
+
+    public UnitOfWorkBehaviour(IUnitOfWork unitOfWork)
     {
-        private readonly IUnitOfWork _unitOfWork;
+        _unitOfWork = unitOfWork;
+    }
 
-        public UnitOfWorkBehaviour(IUnitOfWork unitOfWork)
+    public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next,
+        CancellationToken cancellationToken)
+    {
+        try
         {
-            _unitOfWork = unitOfWork;
+            if (!await _unitOfWork.InitializeTransaction()) throw new Exception("Error initializing transaction");
+            var response = await next();
+
+            if (!await _unitOfWork.CommitTransaction()) throw new Exception("Error saving changes");
+            return response;
         }
-        public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
+        catch
         {
-            try
-            {
-                if (!await _unitOfWork.InitializeTransaction())
-                {
-                    throw new Exception("Error initializing transaction");
-                }
-                var response = await next();
-
-                if (!await _unitOfWork.CommitTransaction())
-                {
-                    throw new Exception("Error saving changes");
-                }
-                return response;
-            }
-            catch
-            {
-                await _unitOfWork.RollbackTransaction();
-                throw;
-            }
+            await _unitOfWork.RollbackTransaction();
+            throw;
         }
-
     }
 }

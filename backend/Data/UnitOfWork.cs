@@ -1,39 +1,32 @@
-using System;
-using LiteDB.Engine;
 using LiteDB;
 
-namespace backend.Data
+namespace backend.Data;
+
+public class UnitOfWork : IUnitOfWork
 {
-
-
-    public class UnitOfWork : IUnitOfWork
+    public UnitOfWork(ILiteDatabase db)
     {
-        private ILiteDatabase _db;
+        Db = db;
+    }
 
-        public IHouseRepository HouseRepository => new HouseRepository(this);
-        public ISensorRepository SensorRepository => new SensorRepository(this);
+    public IHouseRepository HouseRepository => new HouseRepository(this);
+    public ISensorRepository SensorRepository => new SensorRepository(this);
 
-        public ILiteDatabase Db { get => _db;}
-
-        public UnitOfWork(ILiteDatabase db)
-        {
-            _db = db;
-        }
+    public ILiteDatabase Db { get; }
 
 
-        public Task<bool> CommitTransaction()
-        {
-            return Task.FromResult<bool>(Db.Commit());
-        }
+    public Task<bool> CommitTransaction()
+    {
+        return Task.FromResult(Db.Commit());
+    }
 
-        public Task<bool> InitializeTransaction()
-        {
-            return Task.FromResult<bool>(Db.BeginTrans());
-        }
+    public Task<bool> InitializeTransaction()
+    {
+        return Task.FromResult(Db.BeginTrans());
+    }
 
-        public Task<bool> RollbackTransaction()
-        {
-            return Task.FromResult<bool>(Db.Rollback());
-        }
+    public Task<bool> RollbackTransaction()
+    {
+        return Task.FromResult(Db.Rollback());
     }
 }

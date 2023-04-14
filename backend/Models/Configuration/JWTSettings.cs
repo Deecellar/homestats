@@ -1,14 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
+namespace backend.Models.Configuration;
 
-namespace backend.Models.Configuration
+public class JwtSettings
 {
-    public class JWTSettings
-    {
-        public string Key { get; set; }
-        public string Issuer { get; set; }
-        public string Audience { get; set; }
-        public double DurationInMinutes { get; set; }
-    }
+    public string Key { get; set; }
+    public string Issuer { get; set; }
+    public string Audience { get; set; }
+    public double DurationInMinutes { get; set; }
 }

@@ -1,5 +1,6 @@
 using backend.Account;
 using backend.Services;
+using backend.Wrappers;
 using Microsoft.AspNetCore.Mvc;
 
 namespace backend.Controllers;
@@ -14,14 +15,17 @@ public class AccountController : ControllerBase
     {
         _accountService = accountService;
     }
-
+    
     [HttpPost("authenticate")]
+    [ProducesResponseType(typeof(Response<AuthenticationResponse>), 200)]
     public async Task<IActionResult> AuthenticateAsync(AuthenticationRequest request)
     {
         return Ok(await _accountService.AuthenticateAsync(request, GenerateIPAddress()));
     }
 
     [HttpPost("register")]
+    [ProducesResponseType(typeof(Response<string>), 200)]
+
     public async Task<IActionResult> RegisterAsync(RegisterRequest request)
     {
         var origin = Request.Headers["origin"];
@@ -29,6 +33,8 @@ public class AccountController : ControllerBase
     }
 
     [HttpGet("confirm-email")]
+    [ProducesResponseType(typeof(Response<string>), 200)]
+
     public async Task<IActionResult> ConfirmEmailAsync([FromQuery] string userId, [FromQuery] string code)
     {
         var origin = Request.Headers["origin"];
@@ -44,6 +50,8 @@ public class AccountController : ControllerBase
     }
 
     [HttpPost("reset-password")]
+    [ProducesResponseType(typeof(Response<string>), 200)]
+
     public async Task<IActionResult> ResetPassword(ResetPasswordRequest model)
     {
         return Ok(await _accountService.ResetPassword(model));

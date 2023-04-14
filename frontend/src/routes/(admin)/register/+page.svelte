@@ -1,7 +1,33 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
+	import { env } from '$env/dynamic/public';
+	import { Client, IConfig, RegisterRequest } from '$lib/clients';
     import type { PageData } from './$types';
     
     export let data: PageData;
+
+    let client = new Client(new IConfig(localStorage),env.PUBLIC_API_URL);
+    console.log(env.PUBLIC_API_URL);
+    async function register() {
+      // We get the fields from the form (username, email, confirm email, password, confirm password)
+      let username = document.getElementById('username') as HTMLInputElement;
+      let email = document.getElementById('email-address') as HTMLInputElement;
+      let confirmEmail = document.getElementById('confirm-email-address') as HTMLInputElement;
+      let password = document.getElementById('password') as HTMLInputElement;
+      let confirmPassword = document.getElementById('confirm-password') as HTMLInputElement;
+      // We get the values  from the fields
+      let usernameValue = username.value;
+      let emailValue = email.value;
+      let confirmEmailValue = confirmEmail.value;
+      let passwordValue = password.value;
+      let confirmPasswordValue = confirmPassword.value;
+      // We send the data to the API
+      await client.register(new RegisterRequest({firstName: usernameValue, email: emailValue, lastName: usernameValue, userName: usernameValue, password: passwordValue, confirmPassword: confirmPasswordValue}));
+      goto('/login');
+      
+    }
+
+
 </script>
 
 <div class="flex min-h-full h-screen items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gray-900">
@@ -24,7 +50,7 @@
           <a href="/register" class="font-medium text-indigo-500 hover:text-indigo-400">Sign in</a>
         </p>
       </div>
-      <form class="mt-8 space-y-6" action="#" method="POST">
+      <form class="mt-8 space-y-6">
         <input type="hidden" name="remember" value="true">
         <div class="-space-y-px rounded-md shadow-sm">
             <div>
@@ -57,7 +83,7 @@
         </div>
   
         <div>
-          <button type="submit" class="group relative flex w-full justify-center rounded-md bg-indigo-500 py-2 px-3 text-sm font-semibold text-white hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500">
+          <button on:click={register} class="group relative flex w-full justify-center rounded-md bg-indigo-500 py-2 px-3 text-sm font-semibold text-white hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500">
             <span class="absolute inset-y-0 left-0 flex items-center pl-3">
               <svg class="h-5 w-5 text-indigo-400 group-hover:text-indigo-300" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                 <path fill-rule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clip-rule="evenodd" />

@@ -7,13 +7,52 @@
 /* tslint:disable */
 /* eslint-disable */
 // ReSharper disable InconsistentNaming
+/**
+ * Configuration class needed in base class.
+ * The config is provided to the API client at initialization time.
+ * API clients inherit from #AuthorizedApiBase and provide the config.
+ */
+export class IConfig {
+    /**
+     * Returns a valid value for the Authorization header.
+     * We return it from local storage
+     */
+    public constructor(storage : Storage) {
+        this.localstorage = storage;
+    }
+    localstorage: Storage;
+    getAuthorization = () => {
+      if (this.localstorage) {
+        return "Bearer " + this.localstorage.getItem('token');
+      }
+        return "";
+    }
+  }
+  
 
-export class Client {
+export class AuthorizedApiBase {
+    private readonly config: IConfig;
+  
+    protected constructor(config: IConfig) {
+      this.config = config;
+    }
+  
+    protected transformOptions = (options: RequestInit): Promise<RequestInit> => {
+      options.headers = {
+        ...options.headers,
+        Authorization: this.config.getAuthorization(),
+      };
+      return Promise.resolve(options);
+    };
+  }
+
+export class Client extends AuthorizedApiBase {
     private http: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> };
     private baseUrl: string;
     protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
 
-    constructor(baseUrl?: string, http?: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> }) {
+    constructor(configuration: IConfig, baseUrl?: string, http?: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> }) {
+        super(configuration);
         this.http = http ? http : window as any;
         this.baseUrl = baseUrl !== undefined && baseUrl !== null ? baseUrl : "";
     }
@@ -22,7 +61,7 @@ export class Client {
      * @param body (optional) 
      * @return Success
      */
-    authenticate(body: AuthenticationRequest | undefined): Promise<void> {
+    authenticate(body: AuthenticationRequest | undefined): Promise<AuthenticationResponseResponse> {
         let url_ = this.baseUrl + "/api/Account/authenticate";
         url_ = url_.replace(/[?&]$/, "");
 
@@ -33,34 +72,40 @@ export class Client {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
+                "Accept": "text/plain"
             }
         };
 
-        return this.http.fetch(url_, options_).then((_response: Response) => {
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
             return this.processAuthenticate(_response);
         });
     }
 
-    protected processAuthenticate(response: Response): Promise<void> {
+    protected processAuthenticate(response: Response): Promise<AuthenticationResponseResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
             return response.text().then((_responseText) => {
-            return;
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = AuthenticationResponseResponse.fromJS(resultData200);
+            return result200;
             });
         } else if (status !== 200 && status !== 204) {
             return response.text().then((_responseText) => {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<void>(null as any);
+        return Promise.resolve<AuthenticationResponseResponse>(null as any);
     }
 
     /**
      * @param body (optional) 
      * @return Success
      */
-    register(body: RegisterRequest | undefined): Promise<void> {
+    register(body: RegisterRequest | undefined): Promise<StringResponse> {
         let url_ = this.baseUrl + "/api/Account/register";
         url_ = url_.replace(/[?&]$/, "");
 
@@ -71,27 +116,33 @@ export class Client {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
+                "Accept": "text/plain"
             }
         };
 
-        return this.http.fetch(url_, options_).then((_response: Response) => {
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
             return this.processRegister(_response);
         });
     }
 
-    protected processRegister(response: Response): Promise<void> {
+    protected processRegister(response: Response): Promise<StringResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
             return response.text().then((_responseText) => {
-            return;
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = StringResponse.fromJS(resultData200);
+            return result200;
             });
         } else if (status !== 200 && status !== 204) {
             return response.text().then((_responseText) => {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<void>(null as any);
+        return Promise.resolve<StringResponse>(null as any);
     }
 
     /**
@@ -99,7 +150,7 @@ export class Client {
      * @param code (optional) 
      * @return Success
      */
-    confirmEmail(userId: string | undefined, code: string | undefined): Promise<void> {
+    confirmEmail(userId: string | undefined, code: string | undefined): Promise<StringResponse> {
         let url_ = this.baseUrl + "/api/Account/confirm-email?";
         if (userId === null)
             throw new Error("The parameter 'userId' cannot be null.");
@@ -114,27 +165,33 @@ export class Client {
         let options_: RequestInit = {
             method: "GET",
             headers: {
+                "Accept": "text/plain"
             }
         };
 
-        return this.http.fetch(url_, options_).then((_response: Response) => {
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
             return this.processConfirmEmail(_response);
         });
     }
 
-    protected processConfirmEmail(response: Response): Promise<void> {
+    protected processConfirmEmail(response: Response): Promise<StringResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
             return response.text().then((_responseText) => {
-            return;
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = StringResponse.fromJS(resultData200);
+            return result200;
             });
         } else if (status !== 200 && status !== 204) {
             return response.text().then((_responseText) => {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<void>(null as any);
+        return Promise.resolve<StringResponse>(null as any);
     }
 
     /**
@@ -155,7 +212,9 @@ export class Client {
             }
         };
 
-        return this.http.fetch(url_, options_).then((_response: Response) => {
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
             return this.processForgotPassword(_response);
         });
     }
@@ -179,7 +238,7 @@ export class Client {
      * @param body (optional) 
      * @return Success
      */
-    resetPassword(body: ResetPasswordRequest | undefined): Promise<void> {
+    resetPassword(body: ResetPasswordRequest | undefined): Promise<StringResponse> {
         let url_ = this.baseUrl + "/api/Account/reset-password";
         url_ = url_.replace(/[?&]$/, "");
 
@@ -190,27 +249,33 @@ export class Client {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
+                "Accept": "text/plain"
             }
         };
 
-        return this.http.fetch(url_, options_).then((_response: Response) => {
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
             return this.processResetPassword(_response);
         });
     }
 
-    protected processResetPassword(response: Response): Promise<void> {
+    protected processResetPassword(response: Response): Promise<StringResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
             return response.text().then((_responseText) => {
-            return;
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = StringResponse.fromJS(resultData200);
+            return result200;
             });
         } else if (status !== 200 && status !== 204) {
             return response.text().then((_responseText) => {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<void>(null as any);
+        return Promise.resolve<StringResponse>(null as any);
     }
 
     /**
@@ -218,7 +283,7 @@ export class Client {
      * @param pageSize (optional) 
      * @return Success
      */
-    houseGET(page: number | undefined, pageSize: number | undefined, version: string): Promise<void> {
+    houseGET(page: number | undefined, pageSize: number | undefined, version: string): Promise<HouseListResponse> {
         let url_ = this.baseUrl + "/api/v{version}/House?";
         if (version === undefined || version === null)
             throw new Error("The parameter 'version' must be defined.");
@@ -236,34 +301,40 @@ export class Client {
         let options_: RequestInit = {
             method: "GET",
             headers: {
+                "Accept": "text/plain"
             }
         };
 
-        return this.http.fetch(url_, options_).then((_response: Response) => {
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
             return this.processHouseGET(_response);
         });
     }
 
-    protected processHouseGET(response: Response): Promise<void> {
+    protected processHouseGET(response: Response): Promise<HouseListResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
             return response.text().then((_responseText) => {
-            return;
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = HouseListResponse.fromJS(resultData200);
+            return result200;
             });
         } else if (status !== 200 && status !== 204) {
             return response.text().then((_responseText) => {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<void>(null as any);
+        return Promise.resolve<HouseListResponse>(null as any);
     }
 
     /**
      * @param body (optional) 
      * @return Success
      */
-    housePOST(version: string, body: CreateHouseCommand | undefined): Promise<void> {
+    housePOST(version: string, body: CreateHouseCommand | undefined): Promise<HouseResponse> {
         let url_ = this.baseUrl + "/api/v{version}/House";
         if (version === undefined || version === null)
             throw new Error("The parameter 'version' must be defined.");
@@ -277,33 +348,39 @@ export class Client {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
+                "Accept": "text/plain"
             }
         };
 
-        return this.http.fetch(url_, options_).then((_response: Response) => {
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
             return this.processHousePOST(_response);
         });
     }
 
-    protected processHousePOST(response: Response): Promise<void> {
+    protected processHousePOST(response: Response): Promise<HouseResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
             return response.text().then((_responseText) => {
-            return;
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = HouseResponse.fromJS(resultData200);
+            return result200;
             });
         } else if (status !== 200 && status !== 204) {
             return response.text().then((_responseText) => {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<void>(null as any);
+        return Promise.resolve<HouseResponse>(null as any);
     }
 
     /**
      * @return Success
      */
-    houseGET2(id: string, version: string): Promise<void> {
+    houseGET2(id: string, version: string): Promise<HouseResponse> {
         let url_ = this.baseUrl + "/api/v{version}/House/{Id}";
         if (id === undefined || id === null)
             throw new Error("The parameter 'id' must be defined.");
@@ -316,34 +393,40 @@ export class Client {
         let options_: RequestInit = {
             method: "GET",
             headers: {
+                "Accept": "text/plain"
             }
         };
 
-        return this.http.fetch(url_, options_).then((_response: Response) => {
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
             return this.processHouseGET2(_response);
         });
     }
 
-    protected processHouseGET2(response: Response): Promise<void> {
+    protected processHouseGET2(response: Response): Promise<HouseResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
             return response.text().then((_responseText) => {
-            return;
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = HouseResponse.fromJS(resultData200);
+            return result200;
             });
         } else if (status !== 200 && status !== 204) {
             return response.text().then((_responseText) => {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<void>(null as any);
+        return Promise.resolve<HouseResponse>(null as any);
     }
 
     /**
      * @param body (optional) 
      * @return Success
      */
-    housePUT(id: string, version: string, body: UpdateHouseCommand | undefined): Promise<void> {
+    housePUT(id: string, version: string, body: UpdateHouseCommand | undefined): Promise<HouseResponse> {
         let url_ = this.baseUrl + "/api/v{version}/House/{id}";
         if (id === undefined || id === null)
             throw new Error("The parameter 'id' must be defined.");
@@ -360,27 +443,33 @@ export class Client {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
+                "Accept": "text/plain"
             }
         };
 
-        return this.http.fetch(url_, options_).then((_response: Response) => {
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
             return this.processHousePUT(_response);
         });
     }
 
-    protected processHousePUT(response: Response): Promise<void> {
+    protected processHousePUT(response: Response): Promise<HouseResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
             return response.text().then((_responseText) => {
-            return;
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = HouseResponse.fromJS(resultData200);
+            return result200;
             });
         } else if (status !== 200 && status !== 204) {
             return response.text().then((_responseText) => {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<void>(null as any);
+        return Promise.resolve<HouseResponse>(null as any);
     }
 
     /**
@@ -402,7 +491,9 @@ export class Client {
             }
         };
 
-        return this.http.fetch(url_, options_).then((_response: Response) => {
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
             return this.processHouseDELETE(_response);
         });
     }
@@ -425,7 +516,7 @@ export class Client {
     /**
      * @return Success
      */
-    temperatures(id: string, version: string): Promise<void> {
+    temperatures(id: string, version: string): Promise<TemperatureIEnumerableResponse> {
         let url_ = this.baseUrl + "/api/v{version}/House/{Id}/temperatures";
         if (id === undefined || id === null)
             throw new Error("The parameter 'id' must be defined.");
@@ -438,33 +529,39 @@ export class Client {
         let options_: RequestInit = {
             method: "GET",
             headers: {
+                "Accept": "text/plain"
             }
         };
 
-        return this.http.fetch(url_, options_).then((_response: Response) => {
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
             return this.processTemperatures(_response);
         });
     }
 
-    protected processTemperatures(response: Response): Promise<void> {
+    protected processTemperatures(response: Response): Promise<TemperatureIEnumerableResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
             return response.text().then((_responseText) => {
-            return;
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = TemperatureIEnumerableResponse.fromJS(resultData200);
+            return result200;
             });
         } else if (status !== 200 && status !== 204) {
             return response.text().then((_responseText) => {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<void>(null as any);
+        return Promise.resolve<TemperatureIEnumerableResponse>(null as any);
     }
 
     /**
      * @return Success
      */
-    humidity(id: string, version: string): Promise<void> {
+    humidity(id: string, version: string): Promise<HumidityIEnumerableResponse> {
         let url_ = this.baseUrl + "/api/v{version}/House/{Id}/humidity";
         if (id === undefined || id === null)
             throw new Error("The parameter 'id' must be defined.");
@@ -477,33 +574,39 @@ export class Client {
         let options_: RequestInit = {
             method: "GET",
             headers: {
+                "Accept": "text/plain"
             }
         };
 
-        return this.http.fetch(url_, options_).then((_response: Response) => {
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
             return this.processHumidity(_response);
         });
     }
 
-    protected processHumidity(response: Response): Promise<void> {
+    protected processHumidity(response: Response): Promise<HumidityIEnumerableResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
             return response.text().then((_responseText) => {
-            return;
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = HumidityIEnumerableResponse.fromJS(resultData200);
+            return result200;
             });
         } else if (status !== 200 && status !== 204) {
             return response.text().then((_responseText) => {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<void>(null as any);
+        return Promise.resolve<HumidityIEnumerableResponse>(null as any);
     }
 
     /**
      * @return Success
      */
-    sun(id: string, version: string): Promise<void> {
+    sun(id: string, version: string): Promise<SunExposureIEnumerableResponse> {
         let url_ = this.baseUrl + "/api/v{version}/House/{Id}/sun";
         if (id === undefined || id === null)
             throw new Error("The parameter 'id' must be defined.");
@@ -516,33 +619,39 @@ export class Client {
         let options_: RequestInit = {
             method: "GET",
             headers: {
+                "Accept": "text/plain"
             }
         };
 
-        return this.http.fetch(url_, options_).then((_response: Response) => {
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
             return this.processSun(_response);
         });
     }
 
-    protected processSun(response: Response): Promise<void> {
+    protected processSun(response: Response): Promise<SunExposureIEnumerableResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
             return response.text().then((_responseText) => {
-            return;
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = SunExposureIEnumerableResponse.fromJS(resultData200);
+            return result200;
             });
         } else if (status !== 200 && status !== 204) {
             return response.text().then((_responseText) => {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<void>(null as any);
+        return Promise.resolve<SunExposureIEnumerableResponse>(null as any);
     }
 
     /**
      * @return Success
      */
-    sensors(id: string, version: string): Promise<void> {
+    sensors(id: string, version: string): Promise<SensorIEnumerableResponse> {
         let url_ = this.baseUrl + "/api/v{version}/House/{Id}/sensors";
         if (id === undefined || id === null)
             throw new Error("The parameter 'id' must be defined.");
@@ -555,33 +664,39 @@ export class Client {
         let options_: RequestInit = {
             method: "GET",
             headers: {
+                "Accept": "text/plain"
             }
         };
 
-        return this.http.fetch(url_, options_).then((_response: Response) => {
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
             return this.processSensors(_response);
         });
     }
 
-    protected processSensors(response: Response): Promise<void> {
+    protected processSensors(response: Response): Promise<SensorIEnumerableResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
             return response.text().then((_responseText) => {
-            return;
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = SensorIEnumerableResponse.fromJS(resultData200);
+            return result200;
             });
         } else if (status !== 200 && status !== 204) {
             return response.text().then((_responseText) => {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<void>(null as any);
+        return Promise.resolve<SensorIEnumerableResponse>(null as any);
     }
 
     /**
      * @return Success
      */
-    sensors2(id: string, version: string, sensorId: string): Promise<void> {
+    sensors2(id: string, version: string, sensorId: string): Promise<HouseAggregator> {
         let url_ = this.baseUrl + "/api/v{version}/House/{Id}/sensors/{sensorId}";
         if (id === undefined || id === null)
             throw new Error("The parameter 'id' must be defined.");
@@ -597,27 +712,33 @@ export class Client {
         let options_: RequestInit = {
             method: "GET",
             headers: {
+                "Accept": "text/plain"
             }
         };
 
-        return this.http.fetch(url_, options_).then((_response: Response) => {
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
             return this.processSensors2(_response);
         });
     }
 
-    protected processSensors2(response: Response): Promise<void> {
+    protected processSensors2(response: Response): Promise<HouseAggregator> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
             return response.text().then((_responseText) => {
-            return;
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = HouseAggregator.fromJS(resultData200);
+            return result200;
             });
         } else if (status !== 200 && status !== 204) {
             return response.text().then((_responseText) => {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<void>(null as any);
+        return Promise.resolve<HouseAggregator>(null as any);
     }
 
     /**
@@ -627,7 +748,7 @@ export class Client {
      * @param offsetSensors (optional) 
      * @return Success
      */
-    sensors3(page: number | undefined, pageSize: number | undefined, limitSensors: number | undefined, offsetSensors: number | undefined, version: string): Promise<void> {
+    sensors3(page: number | undefined, pageSize: number | undefined, limitSensors: number | undefined, offsetSensors: number | undefined, version: string): Promise<HouseAggregatorIEnumerableResponse> {
         let url_ = this.baseUrl + "/api/v{version}/House/sensors?";
         if (version === undefined || version === null)
             throw new Error("The parameter 'version' must be defined.");
@@ -653,27 +774,33 @@ export class Client {
         let options_: RequestInit = {
             method: "GET",
             headers: {
+                "Accept": "text/plain"
             }
         };
 
-        return this.http.fetch(url_, options_).then((_response: Response) => {
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
             return this.processSensors3(_response);
         });
     }
 
-    protected processSensors3(response: Response): Promise<void> {
+    protected processSensors3(response: Response): Promise<HouseAggregatorIEnumerableResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
             return response.text().then((_responseText) => {
-            return;
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = HouseAggregatorIEnumerableResponse.fromJS(resultData200);
+            return result200;
             });
         } else if (status !== 200 && status !== 204) {
             return response.text().then((_responseText) => {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<void>(null as any);
+        return Promise.resolve<HouseAggregatorIEnumerableResponse>(null as any);
     }
 
     /**
@@ -681,7 +808,7 @@ export class Client {
      * @param pageSize (optional) 
      * @return Success
      */
-    sensorGET(page: number | undefined, pageSize: number | undefined, version: string): Promise<void> {
+    sensorGET(page: number | undefined, pageSize: number | undefined, version: string): Promise<SensorIEnumerableResponse> {
         let url_ = this.baseUrl + "/api/v{version}/Sensor?";
         if (version === undefined || version === null)
             throw new Error("The parameter 'version' must be defined.");
@@ -699,34 +826,40 @@ export class Client {
         let options_: RequestInit = {
             method: "GET",
             headers: {
+                "Accept": "text/plain"
             }
         };
 
-        return this.http.fetch(url_, options_).then((_response: Response) => {
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
             return this.processSensorGET(_response);
         });
     }
 
-    protected processSensorGET(response: Response): Promise<void> {
+    protected processSensorGET(response: Response): Promise<SensorIEnumerableResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
             return response.text().then((_responseText) => {
-            return;
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = SensorIEnumerableResponse.fromJS(resultData200);
+            return result200;
             });
         } else if (status !== 200 && status !== 204) {
             return response.text().then((_responseText) => {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<void>(null as any);
+        return Promise.resolve<SensorIEnumerableResponse>(null as any);
     }
 
     /**
      * @param body (optional) 
      * @return Success
      */
-    sensorPOST(version: string, body: CreateSensorCommand | undefined): Promise<void> {
+    sensorPOST(version: string, body: CreateSensorCommand | undefined): Promise<SensorResponse> {
         let url_ = this.baseUrl + "/api/v{version}/Sensor";
         if (version === undefined || version === null)
             throw new Error("The parameter 'version' must be defined.");
@@ -740,33 +873,39 @@ export class Client {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
+                "Accept": "text/plain"
             }
         };
 
-        return this.http.fetch(url_, options_).then((_response: Response) => {
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
             return this.processSensorPOST(_response);
         });
     }
 
-    protected processSensorPOST(response: Response): Promise<void> {
+    protected processSensorPOST(response: Response): Promise<SensorResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
             return response.text().then((_responseText) => {
-            return;
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = SensorResponse.fromJS(resultData200);
+            return result200;
             });
         } else if (status !== 200 && status !== 204) {
             return response.text().then((_responseText) => {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<void>(null as any);
+        return Promise.resolve<SensorResponse>(null as any);
     }
 
     /**
      * @return Success
      */
-    sensorGET2(id: string, version: string): Promise<void> {
+    sensorGET2(id: string, version: string): Promise<SensorResponse> {
         let url_ = this.baseUrl + "/api/v{version}/Sensor/{Id}";
         if (id === undefined || id === null)
             throw new Error("The parameter 'id' must be defined.");
@@ -779,27 +918,33 @@ export class Client {
         let options_: RequestInit = {
             method: "GET",
             headers: {
+                "Accept": "text/plain"
             }
         };
 
-        return this.http.fetch(url_, options_).then((_response: Response) => {
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
             return this.processSensorGET2(_response);
         });
     }
 
-    protected processSensorGET2(response: Response): Promise<void> {
+    protected processSensorGET2(response: Response): Promise<SensorResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
             return response.text().then((_responseText) => {
-            return;
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = SensorResponse.fromJS(resultData200);
+            return result200;
             });
         } else if (status !== 200 && status !== 204) {
             return response.text().then((_responseText) => {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<void>(null as any);
+        return Promise.resolve<SensorResponse>(null as any);
     }
 
     /**
@@ -821,7 +966,9 @@ export class Client {
             }
         };
 
-        return this.http.fetch(url_, options_).then((_response: Response) => {
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
             return this.processSensorDELETE(_response);
         });
     }
@@ -845,7 +992,7 @@ export class Client {
      * @param body (optional) 
      * @return Success
      */
-    sensorPUT(id: string, version: string, body: UpdateSensorCommand | undefined): Promise<void> {
+    sensorPUT(id: string, version: string, body: UpdateSensorCommand | undefined): Promise<SensorResponse> {
         let url_ = this.baseUrl + "/api/v{version}/Sensor/{id}";
         if (id === undefined || id === null)
             throw new Error("The parameter 'id' must be defined.");
@@ -862,27 +1009,33 @@ export class Client {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
+                "Accept": "text/plain"
             }
         };
 
-        return this.http.fetch(url_, options_).then((_response: Response) => {
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
             return this.processSensorPUT(_response);
         });
     }
 
-    protected processSensorPUT(response: Response): Promise<void> {
+    protected processSensorPUT(response: Response): Promise<SensorResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
             return response.text().then((_responseText) => {
-            return;
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = SensorResponse.fromJS(resultData200);
+            return result200;
             });
         } else if (status !== 200 && status !== 204) {
             return response.text().then((_responseText) => {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<void>(null as any);
+        return Promise.resolve<SensorResponse>(null as any);
     }
 }
 
@@ -924,6 +1077,126 @@ export class AuthenticationRequest implements IAuthenticationRequest {
 export interface IAuthenticationRequest {
     email?: string | undefined;
     password?: string | undefined;
+}
+
+export class AuthenticationResponse implements IAuthenticationResponse {
+    id?: string | undefined;
+    userName?: string | undefined;
+    email?: string | undefined;
+    roles?: string[] | undefined;
+    isVerified?: boolean;
+    jwToken?: string | undefined;
+
+    constructor(data?: IAuthenticationResponse) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.userName = _data["userName"];
+            this.email = _data["email"];
+            if (Array.isArray(_data["roles"])) {
+                this.roles = [] as any;
+                for (let item of _data["roles"])
+                    this.roles!.push(item);
+            }
+            this.isVerified = _data["isVerified"];
+            this.jwToken = _data["jwToken"];
+        }
+    }
+
+    static fromJS(data: any): AuthenticationResponse {
+        data = typeof data === 'object' ? data : {};
+        let result = new AuthenticationResponse();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["userName"] = this.userName;
+        data["email"] = this.email;
+        if (Array.isArray(this.roles)) {
+            data["roles"] = [];
+            for (let item of this.roles)
+                data["roles"].push(item);
+        }
+        data["isVerified"] = this.isVerified;
+        data["jwToken"] = this.jwToken;
+        return data;
+    }
+}
+
+export interface IAuthenticationResponse {
+    id?: string | undefined;
+    userName?: string | undefined;
+    email?: string | undefined;
+    roles?: string[] | undefined;
+    isVerified?: boolean;
+    jwToken?: string | undefined;
+}
+
+export class AuthenticationResponseResponse implements IAuthenticationResponseResponse {
+    succeeded?: boolean;
+    message?: string | undefined;
+    errors?: string[] | undefined;
+    data?: AuthenticationResponse;
+
+    constructor(data?: IAuthenticationResponseResponse) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.succeeded = _data["succeeded"];
+            this.message = _data["message"];
+            if (Array.isArray(_data["errors"])) {
+                this.errors = [] as any;
+                for (let item of _data["errors"])
+                    this.errors!.push(item);
+            }
+            this.data = _data["data"] ? AuthenticationResponse.fromJS(_data["data"]) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): AuthenticationResponseResponse {
+        data = typeof data === 'object' ? data : {};
+        let result = new AuthenticationResponseResponse();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["succeeded"] = this.succeeded;
+        data["message"] = this.message;
+        if (Array.isArray(this.errors)) {
+            data["errors"] = [];
+            for (let item of this.errors)
+                data["errors"].push(item);
+        }
+        data["data"] = this.data ? this.data.toJSON() : <any>undefined;
+        return data;
+    }
+}
+
+export interface IAuthenticationResponseResponse {
+    succeeded?: boolean;
+    message?: string | undefined;
+    errors?: string[] | undefined;
+    data?: AuthenticationResponse;
 }
 
 export class CreateHouseCommand implements ICreateHouseCommand {
@@ -1162,6 +1435,190 @@ export interface IHouseAggregator {
     sunExposures?: SunExposure[] | undefined;
 }
 
+export class HouseAggregatorIEnumerableResponse implements IHouseAggregatorIEnumerableResponse {
+    succeeded?: boolean;
+    message?: string | undefined;
+    errors?: string[] | undefined;
+    data?: HouseAggregator[] | undefined;
+
+    constructor(data?: IHouseAggregatorIEnumerableResponse) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.succeeded = _data["succeeded"];
+            this.message = _data["message"];
+            if (Array.isArray(_data["errors"])) {
+                this.errors = [] as any;
+                for (let item of _data["errors"])
+                    this.errors!.push(item);
+            }
+            if (Array.isArray(_data["data"])) {
+                this.data = [] as any;
+                for (let item of _data["data"])
+                    this.data!.push(HouseAggregator.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): HouseAggregatorIEnumerableResponse {
+        data = typeof data === 'object' ? data : {};
+        let result = new HouseAggregatorIEnumerableResponse();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["succeeded"] = this.succeeded;
+        data["message"] = this.message;
+        if (Array.isArray(this.errors)) {
+            data["errors"] = [];
+            for (let item of this.errors)
+                data["errors"].push(item);
+        }
+        if (Array.isArray(this.data)) {
+            data["data"] = [];
+            for (let item of this.data)
+                data["data"].push(item.toJSON());
+        }
+        return data;
+    }
+}
+
+export interface IHouseAggregatorIEnumerableResponse {
+    succeeded?: boolean;
+    message?: string | undefined;
+    errors?: string[] | undefined;
+    data?: HouseAggregator[] | undefined;
+}
+
+export class HouseListResponse implements IHouseListResponse {
+    succeeded?: boolean;
+    message?: string | undefined;
+    errors?: string[] | undefined;
+    data?: House[] | undefined;
+
+    constructor(data?: IHouseListResponse) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.succeeded = _data["succeeded"];
+            this.message = _data["message"];
+            if (Array.isArray(_data["errors"])) {
+                this.errors = [] as any;
+                for (let item of _data["errors"])
+                    this.errors!.push(item);
+            }
+            if (Array.isArray(_data["data"])) {
+                this.data = [] as any;
+                for (let item of _data["data"])
+                    this.data!.push(House.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): HouseListResponse {
+        data = typeof data === 'object' ? data : {};
+        let result = new HouseListResponse();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["succeeded"] = this.succeeded;
+        data["message"] = this.message;
+        if (Array.isArray(this.errors)) {
+            data["errors"] = [];
+            for (let item of this.errors)
+                data["errors"].push(item);
+        }
+        if (Array.isArray(this.data)) {
+            data["data"] = [];
+            for (let item of this.data)
+                data["data"].push(item.toJSON());
+        }
+        return data;
+    }
+}
+
+export interface IHouseListResponse {
+    succeeded?: boolean;
+    message?: string | undefined;
+    errors?: string[] | undefined;
+    data?: House[] | undefined;
+}
+
+export class HouseResponse implements IHouseResponse {
+    succeeded?: boolean;
+    message?: string | undefined;
+    errors?: string[] | undefined;
+    data?: House;
+
+    constructor(data?: IHouseResponse) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.succeeded = _data["succeeded"];
+            this.message = _data["message"];
+            if (Array.isArray(_data["errors"])) {
+                this.errors = [] as any;
+                for (let item of _data["errors"])
+                    this.errors!.push(item);
+            }
+            this.data = _data["data"] ? House.fromJS(_data["data"]) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): HouseResponse {
+        data = typeof data === 'object' ? data : {};
+        let result = new HouseResponse();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["succeeded"] = this.succeeded;
+        data["message"] = this.message;
+        if (Array.isArray(this.errors)) {
+            data["errors"] = [];
+            for (let item of this.errors)
+                data["errors"].push(item);
+        }
+        data["data"] = this.data ? this.data.toJSON() : <any>undefined;
+        return data;
+    }
+}
+
+export interface IHouseResponse {
+    succeeded?: boolean;
+    message?: string | undefined;
+    errors?: string[] | undefined;
+    data?: House;
+}
+
 export class Humidity implements IHumidity {
     id?: string;
     createdAt?: Date;
@@ -1212,6 +1669,70 @@ export interface IHumidity {
     value?: number;
     recordedAt?: Date;
     houseId?: string;
+}
+
+export class HumidityIEnumerableResponse implements IHumidityIEnumerableResponse {
+    succeeded?: boolean;
+    message?: string | undefined;
+    errors?: string[] | undefined;
+    data?: Humidity[] | undefined;
+
+    constructor(data?: IHumidityIEnumerableResponse) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.succeeded = _data["succeeded"];
+            this.message = _data["message"];
+            if (Array.isArray(_data["errors"])) {
+                this.errors = [] as any;
+                for (let item of _data["errors"])
+                    this.errors!.push(item);
+            }
+            if (Array.isArray(_data["data"])) {
+                this.data = [] as any;
+                for (let item of _data["data"])
+                    this.data!.push(Humidity.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): HumidityIEnumerableResponse {
+        data = typeof data === 'object' ? data : {};
+        let result = new HumidityIEnumerableResponse();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["succeeded"] = this.succeeded;
+        data["message"] = this.message;
+        if (Array.isArray(this.errors)) {
+            data["errors"] = [];
+            for (let item of this.errors)
+                data["errors"].push(item);
+        }
+        if (Array.isArray(this.data)) {
+            data["data"] = [];
+            for (let item of this.data)
+                data["data"].push(item.toJSON());
+        }
+        return data;
+    }
+}
+
+export interface IHumidityIEnumerableResponse {
+    succeeded?: boolean;
+    message?: string | undefined;
+    errors?: string[] | undefined;
+    data?: Humidity[] | undefined;
 }
 
 export class RegisterRequest implements IRegisterRequest {
@@ -1374,10 +1895,186 @@ export interface ISensor {
     houseId?: string;
 }
 
+export class SensorIEnumerableResponse implements ISensorIEnumerableResponse {
+    succeeded?: boolean;
+    message?: string | undefined;
+    errors?: string[] | undefined;
+    data?: Sensor[] | undefined;
+
+    constructor(data?: ISensorIEnumerableResponse) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.succeeded = _data["succeeded"];
+            this.message = _data["message"];
+            if (Array.isArray(_data["errors"])) {
+                this.errors = [] as any;
+                for (let item of _data["errors"])
+                    this.errors!.push(item);
+            }
+            if (Array.isArray(_data["data"])) {
+                this.data = [] as any;
+                for (let item of _data["data"])
+                    this.data!.push(Sensor.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): SensorIEnumerableResponse {
+        data = typeof data === 'object' ? data : {};
+        let result = new SensorIEnumerableResponse();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["succeeded"] = this.succeeded;
+        data["message"] = this.message;
+        if (Array.isArray(this.errors)) {
+            data["errors"] = [];
+            for (let item of this.errors)
+                data["errors"].push(item);
+        }
+        if (Array.isArray(this.data)) {
+            data["data"] = [];
+            for (let item of this.data)
+                data["data"].push(item.toJSON());
+        }
+        return data;
+    }
+}
+
+export interface ISensorIEnumerableResponse {
+    succeeded?: boolean;
+    message?: string | undefined;
+    errors?: string[] | undefined;
+    data?: Sensor[] | undefined;
+}
+
+export class SensorResponse implements ISensorResponse {
+    succeeded?: boolean;
+    message?: string | undefined;
+    errors?: string[] | undefined;
+    data?: Sensor;
+
+    constructor(data?: ISensorResponse) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.succeeded = _data["succeeded"];
+            this.message = _data["message"];
+            if (Array.isArray(_data["errors"])) {
+                this.errors = [] as any;
+                for (let item of _data["errors"])
+                    this.errors!.push(item);
+            }
+            this.data = _data["data"] ? Sensor.fromJS(_data["data"]) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): SensorResponse {
+        data = typeof data === 'object' ? data : {};
+        let result = new SensorResponse();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["succeeded"] = this.succeeded;
+        data["message"] = this.message;
+        if (Array.isArray(this.errors)) {
+            data["errors"] = [];
+            for (let item of this.errors)
+                data["errors"].push(item);
+        }
+        data["data"] = this.data ? this.data.toJSON() : <any>undefined;
+        return data;
+    }
+}
+
+export interface ISensorResponse {
+    succeeded?: boolean;
+    message?: string | undefined;
+    errors?: string[] | undefined;
+    data?: Sensor;
+}
+
 export enum SensorType {
     _0 = 0,
     _1 = 1,
     _2 = 2,
+}
+
+export class StringResponse implements IStringResponse {
+    succeeded?: boolean;
+    message?: string | undefined;
+    errors?: string[] | undefined;
+    data?: string | undefined;
+
+    constructor(data?: IStringResponse) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.succeeded = _data["succeeded"];
+            this.message = _data["message"];
+            if (Array.isArray(_data["errors"])) {
+                this.errors = [] as any;
+                for (let item of _data["errors"])
+                    this.errors!.push(item);
+            }
+            this.data = _data["data"];
+        }
+    }
+
+    static fromJS(data: any): StringResponse {
+        data = typeof data === 'object' ? data : {};
+        let result = new StringResponse();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["succeeded"] = this.succeeded;
+        data["message"] = this.message;
+        if (Array.isArray(this.errors)) {
+            data["errors"] = [];
+            for (let item of this.errors)
+                data["errors"].push(item);
+        }
+        data["data"] = this.data;
+        return data;
+    }
+}
+
+export interface IStringResponse {
+    succeeded?: boolean;
+    message?: string | undefined;
+    errors?: string[] | undefined;
+    data?: string | undefined;
 }
 
 export class SunExposure implements ISunExposure {
@@ -1432,6 +2129,70 @@ export interface ISunExposure {
     houseId?: string;
 }
 
+export class SunExposureIEnumerableResponse implements ISunExposureIEnumerableResponse {
+    succeeded?: boolean;
+    message?: string | undefined;
+    errors?: string[] | undefined;
+    data?: SunExposure[] | undefined;
+
+    constructor(data?: ISunExposureIEnumerableResponse) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.succeeded = _data["succeeded"];
+            this.message = _data["message"];
+            if (Array.isArray(_data["errors"])) {
+                this.errors = [] as any;
+                for (let item of _data["errors"])
+                    this.errors!.push(item);
+            }
+            if (Array.isArray(_data["data"])) {
+                this.data = [] as any;
+                for (let item of _data["data"])
+                    this.data!.push(SunExposure.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): SunExposureIEnumerableResponse {
+        data = typeof data === 'object' ? data : {};
+        let result = new SunExposureIEnumerableResponse();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["succeeded"] = this.succeeded;
+        data["message"] = this.message;
+        if (Array.isArray(this.errors)) {
+            data["errors"] = [];
+            for (let item of this.errors)
+                data["errors"].push(item);
+        }
+        if (Array.isArray(this.data)) {
+            data["data"] = [];
+            for (let item of this.data)
+                data["data"].push(item.toJSON());
+        }
+        return data;
+    }
+}
+
+export interface ISunExposureIEnumerableResponse {
+    succeeded?: boolean;
+    message?: string | undefined;
+    errors?: string[] | undefined;
+    data?: SunExposure[] | undefined;
+}
+
 export class Temperature implements ITemperature {
     id?: string;
     createdAt?: Date;
@@ -1482,6 +2243,70 @@ export interface ITemperature {
     value?: number;
     recordedAt?: Date;
     houseId?: string;
+}
+
+export class TemperatureIEnumerableResponse implements ITemperatureIEnumerableResponse {
+    succeeded?: boolean;
+    message?: string | undefined;
+    errors?: string[] | undefined;
+    data?: Temperature[] | undefined;
+
+    constructor(data?: ITemperatureIEnumerableResponse) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.succeeded = _data["succeeded"];
+            this.message = _data["message"];
+            if (Array.isArray(_data["errors"])) {
+                this.errors = [] as any;
+                for (let item of _data["errors"])
+                    this.errors!.push(item);
+            }
+            if (Array.isArray(_data["data"])) {
+                this.data = [] as any;
+                for (let item of _data["data"])
+                    this.data!.push(Temperature.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): TemperatureIEnumerableResponse {
+        data = typeof data === 'object' ? data : {};
+        let result = new TemperatureIEnumerableResponse();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["succeeded"] = this.succeeded;
+        data["message"] = this.message;
+        if (Array.isArray(this.errors)) {
+            data["errors"] = [];
+            for (let item of this.errors)
+                data["errors"].push(item);
+        }
+        if (Array.isArray(this.data)) {
+            data["data"] = [];
+            for (let item of this.data)
+                data["data"].push(item.toJSON());
+        }
+        return data;
+    }
+}
+
+export interface ITemperatureIEnumerableResponse {
+    succeeded?: boolean;
+    message?: string | undefined;
+    errors?: string[] | undefined;
+    data?: Temperature[] | undefined;
 }
 
 export class UpdateHouseCommand implements IUpdateHouseCommand {
@@ -1594,3 +2419,4 @@ function throwException(message: string, status: number, response: string, heade
     else
         throw new ApiException(message, status, response, headers, null);
 }
+

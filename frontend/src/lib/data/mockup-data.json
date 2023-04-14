@@ -1,7 +1,7 @@
 {
     "homes": [
         {
-            "id": 1,
+            "id": "1",
             "name": "Vacation Home",
             "address": "123 Main St",
             "city": "Anytown",
@@ -328,7 +328,7 @@
             ]
         },
         {
-            "id": 2,
+            "id": "2",
             "name": "Garden",
             "address": "234 Second Stret",
             "city": "Funktown",

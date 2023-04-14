@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import type { PageData } from './$types';
+	import type { PageData } from '../[id=string]/$types';
 	import { Line, Bar } from 'svelte-chartjs';
 	import {
 		Chart as ChartJS,
@@ -12,6 +12,14 @@
 		PointElement,
 		CategoryScale
 	} from 'chart.js';
+	import { Client, HouseAggregator, IConfig } from '$lib/clients';
+	import { onMount } from 'svelte';
+    let homes = new HouseAggregator();
+        onMount(async() => {
+            let client = new Client(new IConfig(localStorage), env.PUBLIC_API_URL);
+            let homie = client.sensorGET2("", "1");
+            homes = (await homie).data!;
+        })
 
 	ChartJS.register(Title, Tooltip, Legend, LineElement, LinearScale, PointElement, CategoryScale);
 	export let data: PageData;

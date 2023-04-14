@@ -1,5 +1,7 @@
+import { redirect } from '@sveltejs/kit';
 import type { LayoutLoad } from './$types';
-import json from  "../../../lib/data/mockup-data.json";
+import { goto } from '$app/navigation';
 export const load = (async () => {
-    return json;
+    // We redirect if the user is not logged in
+    return {}
 }) satisfies LayoutLoad;

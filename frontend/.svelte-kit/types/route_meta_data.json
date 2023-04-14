@@ -10,7 +10,7 @@
 		"src/routes/(app)/stats/+layout.ts",
 		"src/routes/(app)/stats/+layout.ts"
 	],
-	"/(app)/stats/home/[id=integer]": [
+	"/(app)/stats/home/[id=string]": [
 		"src/routes/(app)/stats/+layout.ts"
 	]
 }

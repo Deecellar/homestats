@@ -1,7 +1,16 @@
 <script lang="ts">
 	import type { LayoutData } from './$types';
 	import { page } from '$app/stores';
+	import { Client, House, IConfig } from '$lib/clients';
+	import { onMount } from 'svelte';
+	import { env } from '$env/dynamic/public';
 	export let data: LayoutData;
+	let homes = new Array<House>();
+    onMount(async() => {
+      let client = new Client(new IConfig(localStorage),env.PUBLIC_API_URL);
+    let homie  =client.houseGET(undefined,undefined,"1");
+    homes = (await homie).data!;
+    })
 </script>
 
 <template>
@@ -115,7 +124,7 @@
 								Dashboard
 							</a>
 
-							{#each data.homes as homes}
+							{#each homes as homes}
 								<a
 									href="/stats/home/{homes.id}"
 									class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-base font-medium rounded-md"
@@ -183,7 +192,7 @@
 							Dashboard
 						</a>
 
-						{#each data.homes as homes}
+						{#each homes as homes}
 							<a
 								href="/stats/home/{homes.id}"
 								class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium rounded-md"

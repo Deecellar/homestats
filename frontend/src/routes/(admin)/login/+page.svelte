@@ -1,5 +1,31 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
+	import { env } from '$env/dynamic/public';
+	import { AuthenticationRequest, Client, IConfig } from '$lib/clients';
     import type { PageData } from '../../login/$types';
+
+
+    let client = new Client(new IConfig(localStorage),env.PUBLIC_API_URL);
+    console.log(env.PUBLIC_API_URL);
+    async function login() {
+      let email = document.getElementById('email-address') as HTMLInputElement;
+      let password = document.getElementById('password') as HTMLInputElement;
+      let rememberMe = document.getElementById('remember-me') as HTMLInputElement;
+      // we get the value of the input fields
+      let emailValue = email.value;
+      let passwordValue = password.value;
+      let rememberMeValue = rememberMe.checked;
+      // we send the data to the server
+      let response = await client.authenticate(new AuthenticationRequest({email: emailValue, password: passwordValue}));
+      // We extract the token from the response
+      let token = response.data?.jwToken;
+      // We store the token in the local storage
+      
+      localStorage.setItem('token', token!);
+      // We redirect the user to the dashboard
+      goto("/stats");
+    }
+
     
     export let data: PageData;
 </script>
@@ -24,7 +50,7 @@
               <a href="/register" class="font-medium text-indigo-500 hover:text-indigo-400">create an account</a>
             </p>
           </div>
-          <form class="mt-8 space-y-6" action="#" method="POST">
+          <form class="mt-8 space-y-6" >
             <input type="hidden" name="remember" value="true">
             <div class="-space-y-px rounded-md shadow-sm">
               <div>
@@ -49,7 +75,7 @@
             </div>
       
             <div>
-              <button type="submit" class="group relative flex w-full justify-center rounded-md bg-indigo-500 py-2 px-3 text-sm font-semibold text-white hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500">
+              <button on:click={login} class="group relative flex w-full justify-center rounded-md bg-indigo-500 py-2 px-3 text-sm font-semibold text-white hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500">
                 <span class="absolute inset-y-0 left-0 flex items-center pl-3">
                   <svg class="h-5 w-5 text-indigo-400 group-hover:text-indigo-300" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                     <path fill-rule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clip-rule="evenodd" />

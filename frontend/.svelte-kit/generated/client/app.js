@@ -22,7 +22,7 @@ export const dictionary = {
 	"/(admin)/login": [5],
 	"/(admin)/register": [6],
 	"/(app)/stats": [7,[,3],[2]],
-	"/(app)/stats/home/[id=integer]": [8,[,3],[2]]
+	"/(app)/stats/home/[id=string]": [8,[,3],[2]]
 };
 
 export const hooks = {

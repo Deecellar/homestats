@@ -65,6 +65,8 @@ namespace backend.Services.Implementations
             if (userWithSameUserName != null) throw new Exception($"Username '{request.UserName}' is already taken.");
             var user = new ApplicationUser
             {
+                FirstName = request.FirstName,
+                LastName = request.LastName,
                 Email = request.Email,
                 UserName = request.UserName
             };

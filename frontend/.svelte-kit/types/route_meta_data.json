@@ -1,7 +1,9 @@
 {
 	"/(marketing)": [],
 	"/": [],
-	"/(marketing)/company": [],
+	"/(marketing)/company": [
+		"src/routes/(marketing)/company/+page.server.ts"
+	],
 	"/(marketing)/contact": [],
 	"/(admin)/login": [],
 	"/(admin)/register": [],

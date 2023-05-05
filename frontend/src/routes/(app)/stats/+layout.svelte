@@ -339,8 +339,8 @@
 			<main class="flex-1">
 				<div class="py-6">
 					<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            {#if Number.parseInt($page.params.id) > 0}
-						<h1 class="text-2xl font-semibold text-gray-900">{data.homes[Number.parseInt($page.params.id) - 1].name}</h1>
+            {#if homes.length > 0}
+						<h1 class="text-2xl font-semibold text-gray-900">{homes[0].name}</h1>
             
             {:else}
 						<h1 class="text-2xl font-semibold text-gray-900">Dashboard</h1>

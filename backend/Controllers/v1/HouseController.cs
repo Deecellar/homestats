@@ -24,7 +24,7 @@ public class HouseController : BaseApiController
     [HttpGet("{Id}")]
     [ProducesResponseType(typeof(Response<House>), 200)]
 
-    public async Task<ActionResult> Get([FromRoute] GetHouseByIdQuery query)
+    public async Task<ActionResult> Get(GetHouseByIdQuery query)
     {
         return Ok(new Response<House>(await Mediator.Send(query)));
     }
@@ -36,7 +36,7 @@ public class HouseController : BaseApiController
         return Ok(new Response<House>(await Mediator.Send(command)));
     }
 
-    [HttpPut("{id}")]
+    [HttpPut("{Id}")]
     [ProducesResponseType(typeof(Response<House>), 200)]
 
     public async Task<ActionResult> Put([FromRoute] Guid id, [FromBody] UpdateHouseCommand command)
@@ -45,7 +45,7 @@ public class HouseController : BaseApiController
         return Ok(new Response<House>(await Mediator.Send(command)));
     }
 
-    [HttpDelete("{id}")]
+    [HttpDelete("{Id}")]
     public async Task<ActionResult> Delete([FromRoute] DeleteHouseCommand command)
     {
         await Mediator.Send(command);
@@ -54,21 +54,21 @@ public class HouseController : BaseApiController
 
     [HttpGet("{Id}/temperatures")]
     [ProducesResponseType(typeof(Response<IEnumerable<Temperature>>),200)]
-    public async Task<ActionResult> GetTemperatures([FromRoute] GetHouseTemperatures query)
+    public async Task<ActionResult> GetTemperatures( GetHouseTemperatures query)
     {
         return Ok(new Response<IEnumerable<Temperature>>(await Mediator.Send(query)));
     }
     [ProducesResponseType(typeof(Response<IEnumerable<Humidity>>),200)]
 
     [HttpGet("{Id}/humidity")]
-    public async Task<ActionResult> GetHumidity([FromRoute] GetHouseHumidities query)
+    public async Task<ActionResult> GetHumidity( GetHouseHumidities query)
     {
         return Ok(new Response<IEnumerable<Humidity>>(await Mediator.Send(query)));
     }
     [ProducesResponseType(typeof(Response<IEnumerable<SunExposure>>),200)]
 
     [HttpGet("{Id}/sun")]
-    public async Task<ActionResult> GetSun([FromRoute] GetHouseSunExposures query)
+    public async Task<ActionResult> GetSun( GetHouseSunExposures query)
     {
         return Ok(new Response<IEnumerable<SunExposure>>(await Mediator.Send(query)));
     }
@@ -76,7 +76,7 @@ public class HouseController : BaseApiController
     [HttpGet("{Id}/sensors")]
     [ProducesResponseType(typeof(Response<IEnumerable<Sensor>>),200)]
 
-    public async Task<ActionResult> GetSensors([FromRoute] GetHouseSensors query)
+    public async Task<ActionResult> GetSensors( GetHouseSensors query)
     {
         return Ok(new Response<IEnumerable<Sensor>>(await Mediator.Send(query)));
     }
@@ -84,7 +84,7 @@ public class HouseController : BaseApiController
     [HttpGet("{Id}/sensors/{sensorId}")]
     [ProducesResponseType(typeof(Response<HouseAggregator>),200)]
 
-    public async Task<ActionResult> GetSensor([FromRoute] GetHouseSensorsById query)
+    public async Task<ActionResult> GetSensor( GetHouseSensorsById query)
     {
         return Ok(new Response<HouseAggregator>(await Mediator.Send(query)));
     }
@@ -92,7 +92,7 @@ public class HouseController : BaseApiController
     [HttpGet("sensors")]
     [ProducesResponseType(typeof(Response<IEnumerable<HouseAggregator>>),200)]
 
-    public async Task<ActionResult> GetSensors([FromQuery] GetAllHouseSensors query)
+    public async Task<ActionResult> GetSensors(GetAllHouseSensors query)
     {
         return Ok(new Response<IEnumerable<HouseAggregator>>(await Mediator.Send(query)));
     }

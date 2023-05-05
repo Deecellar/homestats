@@ -8,7 +8,7 @@ namespace backend.Data;
 
 public class SensorRepository : GenericRepository<Sensor>, ISensorRepository
 {
-    public SensorRepository(IUnitOfWork unitOfWork, QueryFactory queryFactory) : base(unitOfWork, "Sensor", queryFactory)
+    public SensorRepository(IUnitOfWork unitOfWork, QueryFactory queryFactory = null) : base(unitOfWork, "Sensor", queryFactory)
     {
     }
 
@@ -21,7 +21,7 @@ public class SensorRepository : GenericRepository<Sensor>, ISensorRepository
         }
         else
         {
-            var sensors = _compiler.Query(_tableName).Where("HouseId", id).Paginate<Sensor>(offset_sensors, limit_sensors).List.ToList();
+            var sensors = _compiler.Query(_tableName).Where("HouseId", id).Paginate<Sensor>(offset_sensors, limit_sensors, _unitOfWorkSqlKata?._transaction).List.ToList();
             return Task.FromResult<IReadOnlyCollection<Sensor>>(new ReadOnlyCollection<Sensor>(sensors));
         }
 
@@ -61,7 +61,7 @@ public class SensorRepository : GenericRepository<Sensor>, ISensorRepository
         }
         else
         {
-            var sensors = _compiler.Query(_tableName).Where("HouseId", id).Paginate<Sensor>(offset_sensors, limit_sensors).List.ToList();
+            var sensors = _compiler.Query(_tableName).Where("HouseId", id).Paginate<Sensor>(offset_sensors, limit_sensors, _unitOfWorkSqlKata?._transaction).List.ToList();
             var houseAggregator = new HouseAggregator(
                 house,
                 sensors.Where(x => x.Type == SensorType.Temperature).Select(x => new Temperature
@@ -108,7 +108,7 @@ public class SensorRepository : GenericRepository<Sensor>, ISensorRepository
         }
         else
         {
-            var sensors = _compiler.Query(_tableName).Where("SensorType", Enum.GetName(SensorType.Humidity)).Where("HouseId", id).Paginate<Sensor>(page, limit).List.ToList();
+            var sensors = _compiler.Query(_tableName).Where("SensorType", Enum.GetName(SensorType.Humidity)).Where("HouseId", id).Paginate<Sensor>(page, limit,_unitOfWorkSqlKata?._transaction).List.ToList();
             var humidities = sensors.Select(x => new Humidity
             {
                 Id = x.Id,
@@ -140,7 +140,7 @@ public class SensorRepository : GenericRepository<Sensor>, ISensorRepository
         }
         else
         {
-            var sensors = _compiler.Query(_tableName).Where("SensorType", Enum.GetName(SensorType.SunExposure)).Where("HouseId", id).Paginate<Sensor>(page, limit).List.ToList();
+            var sensors = _compiler.Query(_tableName).Where("SensorType", Enum.GetName(SensorType.SunExposure)).Where("HouseId", id).Paginate<Sensor>(page, limit,_unitOfWorkSqlKata?._transaction).List.ToList();
             var sunExposures = sensors.Select(x => new SunExposure
             {
                 Id = x.Id,
@@ -171,7 +171,7 @@ public class SensorRepository : GenericRepository<Sensor>, ISensorRepository
         }
         else
         {
-            var sensors = _compiler.Query(_tableName).Where("SensorType", Enum.GetName(SensorType.Temperature)).Where("HouseId", id).Paginate<Sensor>(page, limit).List.ToList();
+            var sensors = _compiler.Query(_tableName).Where("SensorType", Enum.GetName(SensorType.Temperature)).Where("HouseId", id).Paginate<Sensor>(page, limit,_unitOfWorkSqlKata?._transaction).List.ToList();
             var temperatures = sensors.Select(x => new Temperature
             {
                 Id = x.Id,

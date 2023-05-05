@@ -18,6 +18,10 @@ public class UnitOfWorkBehaviour<TRequest, TResponse> : IPipelineBehavior<TReque
     {
         try
         {
+            // if is UnitOfWorkSqlKata we initializee the connection
+            if(_unitOfWork is UnitOfWorkSqlKata unitOfWorkSqlKata)
+                unitOfWorkSqlKata.QueryFactory.Connection.Open();
+
             if (!await _unitOfWork.InitializeTransaction()) throw new Exception("Error initializing transaction");
             var response = await next();
 

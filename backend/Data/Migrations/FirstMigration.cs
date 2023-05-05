@@ -9,19 +9,18 @@ public class FirstMigration : Migration
     {
 
         Create.Table("House")
-            .WithColumn("Id").AsGuid().PrimaryKey()
+            .WithColumn("Id").AsGuid().PrimaryKey().NotNullable().WithDefaultValue(RawSql.Insert("UUID()"))
             .WithColumn("CreatedAt").AsDateTime().NotNullable()
             .WithColumn("Name").AsString(50).NotNullable()
             .WithColumn("Address").AsString(50).NotNullable()
             .WithColumn("City").AsString(50).NotNullable()
             .WithColumn("State").AsString(50).NotNullable();
-
             // We have sensor types: Temperature, Humidity, SunExposure
             // We have value, recorded at, and house id
             // sensor type is a int, 0, 1, 2
 
         Create.Table("Sensor")
-            .WithColumn("Id").AsGuid().PrimaryKey()
+            .WithColumn("Id").AsGuid().PrimaryKey().NotNullable().WithDefaultValue(RawSql.Insert("UUID()"))
             .WithColumn("CreatedAt").AsDateTime().NotNullable()
             .WithColumn("Type").AsInt16().NotNullable()
             .WithColumn("Value").AsDouble().NotNullable()

@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Reflection;
 using backend.Models.Common;
 using LiteDB;
 using SqlKata.Compilers;
@@ -12,6 +13,8 @@ public abstract class GenericRepository<T> : IRepository<T> where T : EntityBase
     public string _tableName = "";
 
     public QueryFactory? _compiler = null;
+
+    public UnitOfWorkSqlKata? _unitOfWorkSqlKata = null;
 
     protected GenericRepository(IUnitOfWork unitOfWork, string tableName = null, QueryFactory compiler = null)
     {
@@ -28,6 +31,7 @@ public abstract class GenericRepository<T> : IRepository<T> where T : EntityBase
         {
             _isLiteDb = false;
             _compiler = compiler;
+            _unitOfWorkSqlKata = unitOfWorkSqlKata;
         }
         else
         {
@@ -52,8 +56,13 @@ public abstract class GenericRepository<T> : IRepository<T> where T : EntityBase
         }
         else
         {
-            var e = _compiler.Query(_tableName).InsertGetId<T>(entity);
-            return Task.FromResult(_compiler.Query(_tableName).Where("Id", e).FirstOrDefault<T>());
+                        IDictionary<string,object>  entityNoID =  new Dictionary<string,object>();
+            foreach(var e in entity.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance)){
+                if(e.Name != "Id")
+                entityNoID[e.Name] = e.GetValue(entity);
+            }
+            _compiler.Query(_tableName).Insert(new ReadOnlyDictionary<string,object>(entityNoID), _unitOfWorkSqlKata?._transaction);
+            return Task.FromResult(entity);
         }
     }
 
@@ -66,7 +75,7 @@ public abstract class GenericRepository<T> : IRepository<T> where T : EntityBase
         }
         else
         {
-            _compiler.Query(_tableName).Where("Id", entity).Delete();
+            _compiler.Query(_tableName).Where("Id", entity).Delete(_unitOfWorkSqlKata?._transaction);
             return Task.CompletedTask;
         }
     }
@@ -79,7 +88,7 @@ public abstract class GenericRepository<T> : IRepository<T> where T : EntityBase
         }
         else
         {
-            return Task.FromResult<IReadOnlyCollection<T>>(new ReadOnlyCollection<T>(_compiler.Query(_tableName).Get<T>().ToList()));
+            return Task.FromResult<IReadOnlyCollection<T>>(new ReadOnlyCollection<T>(_compiler.Query(_tableName).Get<T>(_unitOfWorkSqlKata?._transaction).ToList()));
         }
     }
 
@@ -91,7 +100,7 @@ public abstract class GenericRepository<T> : IRepository<T> where T : EntityBase
         }
         else
         {
-            return Task.FromResult(_compiler.Query(_tableName).Where("Id", id).FirstOrDefault<T>());
+            return Task.FromResult(_compiler.Query(_tableName).Where("Id", id).FirstOrDefault<T>(_unitOfWorkSqlKata?._transaction));
         }
     }
 
@@ -105,7 +114,7 @@ public abstract class GenericRepository<T> : IRepository<T> where T : EntityBase
         else
         {
             return Task.FromResult<IReadOnlyCollection<T>>(
-            new ReadOnlyCollection<T>(_compiler.Query(_tableName).Paginate<T>(page, pageSize).List.ToList()));
+            new ReadOnlyCollection<T>(_compiler.Query(_tableName).Paginate<T>(page, pageSize, _unitOfWorkSqlKata?._transaction).List.ToList()));
         }
     }
 
@@ -118,7 +127,7 @@ public abstract class GenericRepository<T> : IRepository<T> where T : EntityBase
         }
         else
         {
-            _compiler.Query(_tableName).Where("Id", entity.Id).Update(entity);
+            _compiler.Query(_tableName).Where("Id", entity.Id).Update(entity, _unitOfWorkSqlKata?._transaction);
             return Task.CompletedTask;
         }
 

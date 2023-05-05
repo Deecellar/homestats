@@ -25,6 +25,9 @@ using MySqlConnector;
 using backend.Models.Common;
 using backend.Account;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
+using System.Data;
+using SqlKata.Execution;
+using SqlKata.Compilers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -98,7 +101,7 @@ builder.Services.AddDbContext<IdentityContext>(options => options.UseMySql(conne
         builder.    Services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<IdentityContext>().AddDefaultTokenProviders();
 
 // We add the repository and unit of work to the DI container
-builder.Services.AddTransient<IUnitOfWork, UnitOfWorkSqlKata>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWorkSqlKata>();
 
 // We add fluent migrations to the DI container
 
@@ -128,6 +131,10 @@ builder.Services
     .ScanIn(Assembly.GetExecutingAssembly()).For.Migrations())
 .AddLogging(lb => lb.AddFluentMigratorConsole());
 
+            Dapper.SqlMapper.AddTypeHandler(new GuidDapperHandler());
+            Dapper.SqlMapper.RemoveTypeMap(typeof(Guid));
+            Dapper.SqlMapper.RemoveTypeMap(typeof(Guid?));
+            
 // We run the migrations on startu
 {
 using var scope = builder.Services.BuildServiceProvider().CreateScope();
@@ -208,6 +215,7 @@ builder.Services.AddSingleton<JwtSettings>(_ => builder.Configuration.GetSection
 builder.Services.AddTransient<IAccountService, AccountService>();
 builder.Services.AddTransient<IHouseService, HouseService>();
 builder.Services.AddTransient<ISensorService, SensorService>();
+builder.Services.AddScoped<QueryFactory>(_ => new QueryFactory(new MySqlConnection(connectionString2), new MySqlCompiler()));
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

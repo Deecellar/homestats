@@ -20,6 +20,7 @@ public class SensorService : ISensorService
         if (_authenticatedUserService.UserId == null) throw new UnauthorizedAccessException("You are not logged in");
         var newSensor = new Sensor
         {
+            Id = Guid.NewGuid(),
             Type = sensor.Type,
             HouseId = sensor.HouseId,
             CreatedAt = DateTime.Now,

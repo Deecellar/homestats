@@ -24,6 +24,7 @@ public class HouseService : IHouseService
         // We add the current date to the house, need to recreate it since it's a record
         var newHouse = new House(house.Name, house.Address, house.City, house.State)
         {
+            Id = Guid.NewGuid(),
             CreatedAt = DateTime.Now
         };
         return _houseRepository.AddAsync(newHouse);

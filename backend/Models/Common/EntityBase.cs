@@ -5,6 +5,6 @@ namespace backend.Models.Common;
 
 public record EntityBase
 {
-    public Guid Id { get; init; }
-    public DateTime CreatedAt { get; init; }
+    public Guid Id { get; set; } = Guid.NewGuid();
+    public DateTime CreatedAt { get; set; } = DateTime.Now;
 }

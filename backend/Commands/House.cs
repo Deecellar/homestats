@@ -2,61 +2,74 @@ using backend.Models.Aggregators;
 using backend.Models.Entity;
 using backend.Services;
 using MediatR;
+using Microsoft.AspNetCore.Mvc;
 
 namespace backend.Queries
 {
     public class GetHousesQuery : IRequest<IEnumerable<House>>
     {
+        [FromQuery]
         public int Page { get; set; }
+        [FromQuery]
         public int PageSize { get; set; }
     }
 
     public class GetHouseByIdQuery : IRequest<House>
     {
+        [FromRoute]
         public Guid Id { get; set; }
     }
 
     public class GetAllHouseSensors : IRequest<IEnumerable<HouseAggregator>>
     {
+        [FromQuery]
         public int Page { get; set; }
-        public int PageSize { get; set; }
-        public int LimitSensors { get; set; }
-        public int OffsetSensors { get; set; }
+        [FromQuery]public int PageSize { get; set; }
+        [FromQuery]public int LimitSensors { get; set; }
+        [FromQuery]public int OffsetSensors { get; set; }
     }
 
     public class GetHouseSensorsById : IRequest<HouseAggregator>
     {
+        [FromRoute]
         public Guid Id { get; set; }
-        public int LimitSensors { get; set; }
-        public int OffsetSensors { get; set; }
+        [FromQuery] public int LimitSensors { get; set; }
+        [FromQuery] public int OffsetSensors { get; set; }
     }
 
     public class GetHouseSensors : IRequest<IEnumerable<Sensor>>
     {
+        [FromRoute]
         public Guid Id { get; set; }
+        [FromRoute]
         public int LimitSensors { get; set; }
+        [FromRoute]
         public int OffsetSensors { get; set; }
     }
 
     public class GetHouseTemperatures : IRequest<IEnumerable<Temperature>>
     {
-        public Guid Id { get; set; }
-        public int LimitSensors { get; set; }
-        public int OffsetSensors { get; set; }
+     [FromRoute]   public Guid Id { get; set; }
+        [FromRoute]public int LimitSensors { get; set; }
+        [FromRoute]public int OffsetSensors { get; set; }
     }
 
     public class GetHouseHumidities : IRequest<IEnumerable<Humidity>>
     {
+        [FromRoute]
         public Guid Id { get; set; }
+        [FromQuery]
         public int LimitSensors { get; set; }
+        [FromQuery]
         public int OffsetSensors { get; set; }
     }
 
     public class GetHouseSunExposures : IRequest<IEnumerable<SunExposure>>
     {
+        [FromRoute]
         public Guid Id { get; set; }
-        public int LimitSensors { get; set; }
-        public int OffsetSensors { get; set; }
+        [FromQuery] public int LimitSensors { get; set; }
+        [FromQuery] public int OffsetSensors { get; set; }
     }
 
     public class GetHouseByIdQueryHandler : IRequestHandler<GetHouseByIdQuery, House>

@@ -6,27 +6,27 @@ public class UnitOfWork : IUnitOfWork
 {
     public UnitOfWork(ILiteDatabase db)
     {
-        Db = db;
+        LiteDbDatabase = db;
     }
 
-    public IHouseRepository HouseRepository => new HouseRepository(this);
-    public ISensorRepository SensorRepository => new SensorRepository(this);
+    public IHouseRepository HouseRepository => new HouseRepository(this, null);
+    public ISensorRepository SensorRepository => new SensorRepository(this, null);
 
-    public ILiteDatabase Db { get; }
+    public ILiteDatabase LiteDbDatabase { get; }
 
 
     public Task<bool> CommitTransaction()
     {
-        return Task.FromResult(Db.Commit());
+        return Task.FromResult(LiteDbDatabase.Commit());
     }
 
     public Task<bool> InitializeTransaction()
     {
-        return Task.FromResult(Db.BeginTrans());
+        return Task.FromResult(LiteDbDatabase.BeginTrans());
     }
 
     public Task<bool> RollbackTransaction()
     {
-        return Task.FromResult(Db.Rollback());
+        return Task.FromResult(LiteDbDatabase.Rollback());
     }
 }

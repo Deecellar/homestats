@@ -7,23 +7,24 @@ using System.Text;
 using backend.Account;
 using backend.Models.Configuration;
 using backend.Wrappers;
-using LiteDB.Identity.Models;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.IdentityModel.Tokens;
+using backend.Models.Common;
 
 namespace backend.Services.Implementations
 {
     public class AccountService : IAccountService
     {
         private readonly JwtSettings _jwtSettings;
-        private readonly RoleManager<LiteDbRole> _roleManager;
-        private readonly SignInManager<LiteDbUser> _signInManager;
-        private readonly UserManager<LiteDbUser> _userManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public AccountService(UserManager<LiteDbUser> userManager,
-            RoleManager<LiteDbRole> roleManager,
-            SignInManager<LiteDbUser> signInManager,
+        public AccountService(UserManager<ApplicationUser> userManager,
+            RoleManager<IdentityRole> roleManager,
+            SignInManager<ApplicationUser> signInManager,
             JwtSettings jwtSettings)
         {
             _userManager = userManager;
@@ -62,7 +63,7 @@ namespace backend.Services.Implementations
         {
             var userWithSameUserName = await _userManager.FindByNameAsync(request.UserName);
             if (userWithSameUserName != null) throw new Exception($"Username '{request.UserName}' is already taken.");
-            var user = new LiteDbUser
+            var user = new ApplicationUser
             {
                 Email = request.Email,
                 UserName = request.UserName
@@ -127,7 +128,7 @@ namespace backend.Services.Implementations
             throw new Exception("Error occured while reseting the password.");
         }
 
-        private async Task<JwtSecurityToken> GenerateJWToken(LiteDbUser user)
+        private async Task<JwtSecurityToken> GenerateJWToken(ApplicationUser user)
         {
             var ipAddress = IpHelper.GetIpAddress();
 
@@ -136,7 +137,7 @@ namespace backend.Services.Implementations
                 new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim("uid", user.Id.ToString()),
+                new Claim("uid", user.Id),
                 new Claim("ip", ipAddress)
             };
 
@@ -162,7 +163,7 @@ namespace backend.Services.Implementations
             return BitConverter.ToString(randomBytes).Replace("-", "");
         }
 
-        private async Task<string> SendVerificationEmail(LiteDbUser user, string origin)
+        private async Task<string> SendVerificationEmail(ApplicationUser user, string origin)
         {
             var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
             code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));

@@ -1,10 +1,12 @@
 using LiteDB;
-
+using SqlKata;
 namespace backend.Data;
 
 public interface IUnitOfWork
 {
-    ILiteDatabase Db { get; }
+    
+    ILiteDatabase LiteDbDatabase { get; }
+    
     Task<bool> InitializeTransaction();
     Task<bool> CommitTransaction();
     Task<bool> RollbackTransaction();

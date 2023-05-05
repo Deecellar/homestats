@@ -6,14 +6,25 @@ using backend.Models.Configuration;
 using backend.Services;
 using backend.Services.Implementations;
 using backend.Wrappers;
-using LiteDB;
-using LiteDB.Identity.Extensions;
+
+using FluentMigrator.Runner;
+using FluentMigrator.Runner.Initialization;
+
+using Microsoft.Extensions.DependencyInjection;
+
+
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
+using MySqlConnector;
+using backend.Models.Common;
+using backend.Account;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -78,15 +89,55 @@ builder.Services.AddCors(options => options.AddDefaultPolicy(corsPolicyBuilder =
     corsPolicyBuilder.AllowAnyHeader();
 }));
 
-// We add the litedb database to the DI container 
-var connectionString = builder.Configuration.GetConnectionString("LiteDb");
-// We add a transient service to the DI container
-builder.Services.AddTransient<ILiteDatabase>(_ => new LiteDatabase(connectionString));
-builder.Services.AddLiteDBIdentity(connectionString).AddDefaultTokenProviders();
+// We get the connection string from the Environment variables
+var connectionString = builder.Configuration.GetConnectionString("MariadbIdentity");
+
+// We add the database to the Mariadb identity store
+builder.Services.AddDbContext<IdentityContext>(options => options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString), b => b.SchemaBehavior(MySqlSchemaBehavior.Translate,
+    (schema, entity) => $"{schema ?? "dbo"}_{entity}")));
+        builder.    Services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<IdentityContext>().AddDefaultTokenProviders();
 
 // We add the repository and unit of work to the DI container
-builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
+builder.Services.AddTransient<IUnitOfWork, UnitOfWorkSqlKata>();
 
+// We add fluent migrations to the DI container
+
+
+
+
+// We now load the normal database connection string
+var connectionString2 = builder.Configuration.GetConnectionString("Mariadb");
+
+// We connect to database, create the homestats database if it doesn't exist
+// We enter with sql client from C#
+{
+    var connectionString3 = builder.Configuration.GetConnectionString("MariaDbCreation");
+using var connection = new MySqlConnection(connectionString3);
+connection.Open();
+using var command = connection.CreateCommand();
+command.CommandText = "CREATE DATABASE IF NOT EXISTS homestats";
+command.ExecuteNonQuery();
+}
+
+// We run the fluent migrations on startup
+builder.Services
+.AddFluentMigratorCore()
+.ConfigureRunner(rb => rb
+    .AddMySql5()
+    .WithGlobalConnectionString(connectionString2)
+    .ScanIn(Assembly.GetExecutingAssembly()).For.Migrations())
+.AddLogging(lb => lb.AddFluentMigratorConsole());
+
+// We run the migrations on startu
+{
+using var scope = builder.Services.BuildServiceProvider().CreateScope();
+var db = scope.ServiceProvider.GetRequiredService<IdentityContext>();
+db.Database.Migrate();
+
+var runner = scope.ServiceProvider.GetRequiredService<IMigrationRunner>();
+runner.MigrateUp();
+
+}
 // We configure the authorization service
 builder.Services.AddAuthorization(options =>
 {

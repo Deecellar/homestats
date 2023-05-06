@@ -8,7 +8,7 @@ public interface IHouseService
     Task<IReadOnlyCollection<House>> GetAllHouses(int page, int pageSize);
     Task<House> GetHouseById(Guid id);
     Task<House> CreateHouse(House house);
-    Task<House> UpdateHouse(Guid id, HouseAggregator house);
+    Task<House> UpdateHouse(Guid id, House house);
     Task DeleteHouse(Guid id);
 
     Task<IReadOnlyCollection<HouseAggregator>> GetAllHouseSensors(int page, int pageSize, int limitSensors,

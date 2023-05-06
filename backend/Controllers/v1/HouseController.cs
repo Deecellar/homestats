@@ -24,7 +24,7 @@ public class HouseController : BaseApiController
     [HttpGet("{Id}")]
     [ProducesResponseType(typeof(Response<House>), 200)]
 
-    public async Task<ActionResult> Get(GetHouseByIdQuery query)
+    public async Task<ActionResult> Get([FromRoute] GetHouseByIdQuery query)
     {
         return Ok(new Response<House>(await Mediator.Send(query)));
     }

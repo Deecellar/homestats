@@ -479,7 +479,7 @@ export class Client extends AuthorizedApiBase {
         let url_ = this.baseUrl + "/api/v{version}/House/{id}";
         if (id === undefined || id === null)
             throw new Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{Id}", encodeURIComponent("" + id));
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
         if (version === undefined || version === null)
             throw new Error("The parameter 'version' must be defined.");
         url_ = url_.replace("{version}", encodeURIComponent("" + version));
@@ -2311,7 +2311,7 @@ export interface ITemperatureIEnumerableResponse {
 
 export class UpdateHouseCommand implements IUpdateHouseCommand {
     id?: string;
-    house?: HouseAggregator;
+    house?: House;
 
     constructor(data?: IUpdateHouseCommand) {
         if (data) {
@@ -2346,7 +2346,7 @@ export class UpdateHouseCommand implements IUpdateHouseCommand {
 
 export interface IUpdateHouseCommand {
     id?: string;
-    house?: HouseAggregator;
+    house?: House;
 }
 
 export class UpdateSensorCommand implements IUpdateSensorCommand {

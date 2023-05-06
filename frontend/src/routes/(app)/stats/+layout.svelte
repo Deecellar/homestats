@@ -6,11 +6,12 @@
 	import { env } from '$env/dynamic/public';
 	export let data: LayoutData;
 	let homes = new Array<House>();
-    onMount(async() => {
-      let client = new Client(new IConfig(localStorage),env.PUBLIC_API_URL);
-    let homie  =client.houseGET(undefined,undefined,"1");
-    homes = (await homie).data!;
-    })
+	onMount(async () => {
+		let client = new Client(new IConfig(localStorage), env.PUBLIC_API_URL);
+		let homie = client.houseGET(undefined, undefined, '1');
+		homes = (await homie).data!;
+	});
+
 </script>
 
 <template>
@@ -102,27 +103,30 @@
 					<div class="mt-5 h-0 flex-1 overflow-y-auto">
 						<nav class="space-y-1 px-2">
 							<!-- Current: "bg-gray-100 text-gray-900", Default: "text-gray-600 hover:bg-gray-50 hover:text-gray-900" -->
-							<a
-								href="/stats"
-								class="bg-gray-100 text-gray-900 group flex items-center px-2 py-2 text-base font-medium rounded-md"
-							>
-								<!-- Current: "text-gray-500", Default: "text-gray-400 group-hover:text-gray-500" -->
-								<svg
-									class="text-gray-500 mr-4 flex-shrink-0 h-6 w-6"
-									fill="none"
-									viewBox="0 0 24 24"
-									stroke-width="1.5"
-									stroke="currentColor"
-									aria-hidden="true"
+							<div class="flex">
+								<a
+									href="/stats"
+									class="bg-gray-100 text-gray-900 group flex items-center px-2 py-2 text-base font-medium rounded-md"
 								>
-									<path
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"
-									/>
-								</svg>
-								Dashboard
-							</a>
+									<!-- Current: "text-gray-500", Default: "text-gray-400 group-hover:text-gray-500" -->
+									<svg
+										class="text-gray-500 mr-4 flex-shrink-0 h-6 w-6"
+										fill="none"
+										viewBox="0 0 24 24"
+										stroke-width="1.5"
+										stroke="currentColor"
+										aria-hidden="true"
+									>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"
+										/>
+									</svg>
+									Dashboard
+								</a>
+
+							</div>
 
 							{#each homes as homes}
 								<a
@@ -157,7 +161,7 @@
 		</div>
 
 		<!-- Static sidebar for desktop -->
-		<div class="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col">
+		<div class="hidden lg:fixed h-full lg:inset-y-0 lg:flex lg:w-64 lg:flex-col">
 			<!-- Sidebar component, swap this element with another sidebar if you like -->
 			<div class="flex flex-grow flex-col overflow-y-auto border-r border-gray-200 bg-white pt-5">
 				<div class="flex flex-shrink-0 items-center px-4">
@@ -167,6 +171,7 @@
 						alt="Your Company"
 					/>
 				</div>
+				
 				<div class="mt-5 flex flex-grow flex-col">
 					<nav class="flex-1 space-y-1 px-2 pb-4">
 						<!-- Current: "bg-gray-100 text-gray-900", Default: "text-gray-600 hover:bg-gray-50 hover:text-gray-900" -->
@@ -191,7 +196,25 @@
 							</svg>
 							Dashboard
 						</a>
-
+												<!-- We add an extra item her for an add button -->
+						<a
+							href="/stats/home/create"
+								class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium rounded-md"
+						>
+								<svg
+									class="text-gray-400 group-hover:text-gray-500 mr-3 flex-shrink-0 h-6 w-6"
+									fill="none"
+									viewBox="0 0 24 24"
+									stroke-width="1.5"
+									stroke="currentColor"
+									aria-hidden="true"
+								>
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"									/>
+								</svg>
+						Add</a>
 						{#each homes as homes}
 							<a
 								href="/stats/home/{homes.id}"
@@ -214,6 +237,7 @@
 								{homes.name}
 							</a>
 						{/each}
+
 					</nav>
 				</div>
 			</div>
@@ -244,7 +268,7 @@
 					<div class="flex flex-1">
 						<form class="flex w-full lg:ml-0" action="#" method="GET">
 							<label for="search-field" class="sr-only">Search</label>
-							<div class="relative w-full text-gray-400 focus-within:text-gray-600">
+							<div class="	 w-full text-gray-400 focus-within:text-gray-600">
 								<div class="pointer-events-none absolute inset-y-0 left-0 flex items-center">
 									<svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
 										<path
@@ -325,7 +349,7 @@
 								<!-- Active: "bg-gray-100", Not Active: "" -->
 								<a
 									href="#"
-									class="block px-4 py-2 text-sm text-gray-700"
+									class="block hidden px-4 py-2 text-sm text-gray-700"
 									role="menuitem"
 									tabindex="-1"
 									id="user-menu-item-2">Sign out</a
@@ -338,14 +362,12 @@
 
 			<main class="flex-1">
 				<div class="py-6">
-					<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            {#if homes.length > 0}
-						<h1 class="text-2xl font-semibold text-gray-900">{homes[0].name}</h1>
-            
-            {:else}
-						<h1 class="text-2xl font-semibold text-gray-900">Dashboard</h1>
-            {/if}
-
+					<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8  mb-10">
+						{#if homes.length < 0}
+							<h1 class="text-2xl font-semibold text-gray-900">{homes[0].name}</h1>
+						{:else}
+							<h1 class="text-2xl font-semibold text-gray-900">Dashboard</h1>
+						{/if}
 					</div>
 					<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 						<!-- Replace with your content -->
@@ -354,6 +376,8 @@
 					</div>
 				</div>
 			</main>
+			<!-- We fill the rest of the space with an empty span. -->
 		</div>
+		
 	</div>
 </template>

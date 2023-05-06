@@ -12,6 +12,12 @@
 		"src/routes/(app)/stats/+layout.ts",
 		"src/routes/(app)/stats/+layout.ts"
 	],
+	"/(app)/stats/home/create": [
+		"src/routes/(app)/stats/+layout.ts"
+	],
+	"/(app)/stats/home/update/[id=string]": [
+		"src/routes/(app)/stats/+layout.ts"
+	],
 	"/(app)/stats/home/[id=string]": [
 		"src/routes/(app)/stats/+layout.ts"
 	]

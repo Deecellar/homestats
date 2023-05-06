@@ -127,7 +127,12 @@ public abstract class GenericRepository<T> : IRepository<T> where T : EntityBase
         }
         else
         {
-            _compiler.Query(_tableName).Where("Id", entity.Id).Update(entity, _unitOfWorkSqlKata?._transaction);
+                                    IDictionary<string,object>  entityNoID =  new Dictionary<string,object>();
+            foreach(var e in entity.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance)){
+                if(e.Name != "Id")
+                entityNoID[e.Name] = e.GetValue(entity);
+            }
+            _compiler.Query(_tableName).Where("Id", entity.Id).Update(entityNoID, _unitOfWorkSqlKata?._transaction);
             return Task.CompletedTask;
         }
 

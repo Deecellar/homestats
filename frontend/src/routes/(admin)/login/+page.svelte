@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { env } from '$env/dynamic/public';
 	import { AuthenticationRequest, Client, IConfig } from '$lib/clients';
+	import { onMount } from 'svelte';
     import type { PageData } from '../../login/$types';
 
 
@@ -26,6 +27,9 @@
       goto("/stats");
     }
 
+    onMount(async() => {
+      let token = localStorage.removeItem('token');
+    })
     
     export let data: PageData;
 </script>

@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using backend.Models.Aggregators;
 using backend.Models.Entity;
 using backend.Services;
@@ -212,17 +213,11 @@ namespace backend.Commands
     }
 
     public class UpdateHouseCommand : IRequest<House>
+
     {
-        public UpdateHouseCommand(Guid id, HouseAggregator house)
-        {
-            if (house == null)
-                throw new ArgumentNullException(nameof(house));
-            Id = id;
-            House = house;
-        }
 
         public Guid Id { get; set; }
-        public HouseAggregator House { get; set; }
+        public House House { get; set; }
     }
 
     public class DeleteHouseCommand : IRequest

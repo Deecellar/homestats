@@ -1,6 +1,7 @@
 using backend.Models.Entity;
 using backend.Services;
 using MediatR;
+using Microsoft.AspNetCore.Mvc;
 
 namespace backend.Queries
 {
@@ -10,13 +11,9 @@ namespace backend.Queries
         public int PageSize { get; set; } = 30;
     }
 
-    public class GetSensorByIdQuery : IRequest<Sensor>
+    public class GetSensorByIdQuery : IRequest<IReadOnlyCollection<Sensor>>
     {
-        public GetSensorByIdQuery(Guid id)
-        {
-            Id = id;
-        }
-
+        [FromRoute]
         public Guid Id { get; set; }
     }
 
@@ -43,7 +40,7 @@ namespace backend.Queries
         }
     }
 
-    public class GetSensorByIdRequestHandler : IRequestHandler<GetSensorByIdQuery, Sensor>
+    public class GetSensorByIdRequestHandler : IRequestHandler<GetSensorByIdQuery, IReadOnlyCollection<Sensor>>
     {
         private readonly ISensorService _sensorService;
 
@@ -52,7 +49,7 @@ namespace backend.Queries
             _sensorService = sensorService;
         }
 
-        public async Task<Sensor> Handle(GetSensorByIdQuery request, CancellationToken cancellationToken)
+        public async Task<IReadOnlyCollection<Sensor>> Handle(GetSensorByIdQuery request, CancellationToken cancellationToken)
         {
             return await _sensorService.GetSensorById(request.Id);
         }
@@ -104,7 +101,7 @@ namespace backend.Commands
 
         public async Task<Sensor> Handle(CreateSensorCommand request, CancellationToken cancellationToken)
         {
-            return await _sensorService.CreateSensor(request.Sensor);
+            return await _sensorService.CreateSensor(null);
         }
     }
 

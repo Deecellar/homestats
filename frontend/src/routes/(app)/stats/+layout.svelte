@@ -1,17 +1,19 @@
 <script lang="ts">
 	import type { LayoutData } from './$types';
 	import { page } from '$app/stores';
-	import { Client, House, IConfig } from '$lib/clients';
 	import { onMount } from 'svelte';
-	import { env } from '$env/dynamic/public';
+	import { houseStore } from '$lib/houseStore';
 	export let data: LayoutData;
-	let homes = new Array<House>();
+	let homes = houseStore;
 	onMount(async () => {
-		let client = new Client(new IConfig(localStorage), env.PUBLIC_API_URL);
-		let homie = client.houseGET(undefined, undefined, '1');
-		homes = (await homie).data!;
 	});
+	let isOpen = false;
+	function open() {
+		// We open the sign out menu
+		isOpen = !isOpen;
 
+	}
+	$: homes = homes;
 </script>
 
 <template>
@@ -128,7 +130,7 @@
 
 							</div>
 
-							{#each homes as homes}
+							{#each $homes as homes}
 								<a
 									href="/stats/home/{homes.id}"
 									class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-base font-medium rounded-md"
@@ -155,7 +157,6 @@
 				</div>
 
 				<div class="w-14 flex-shrink-0" aria-hidden="true">
-					<!-- Dummy element to force sidebar to shrink to fit close icon -->
 				</div>
 			</div>
 		</div>
@@ -215,7 +216,7 @@
 d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"									/>
 								</svg>
 						Add</a>
-						{#each homes as homes}
+						{#each $homes as homes}
 							<a
 								href="/stats/home/{homes.id}"
 								class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium rounded-md"
@@ -319,6 +320,7 @@ d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"									/>
 									id="user-menu-button"
 									aria-expanded="false"
 									aria-haspopup="true"
+									on:click={() => (open())}
 								>
 									<span class="sr-only">Open user menu</span>
 									<img
@@ -327,6 +329,7 @@ d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"									/>
 										alt=""
 									/>
 								</button>
+
 							</div>
 
 							<!--
@@ -340,7 +343,7 @@ d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"									/>
                 To: "transform opacity-0 scale-95"
             -->
 							<div
-								class="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+								class="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none {isOpen ? 'block' : 'hidden'}"
 								role="menu"
 								aria-orientation="vertical"
 								aria-labelledby="user-menu-button"
@@ -349,7 +352,7 @@ d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"									/>
 								<!-- Active: "bg-gray-100", Not Active: "" -->
 								<a
 									href="#"
-									class="block hidden px-4 py-2 text-sm text-gray-700"
+									class="block  px-4 py-2 text-sm text-gray-700"
 									role="menuitem"
 									tabindex="-1"
 									id="user-menu-item-2">Sign out</a
@@ -363,8 +366,8 @@ d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"									/>
 			<main class="flex-1">
 				<div class="py-6">
 					<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8  mb-10">
-						{#if homes.length < 0}
-							<h1 class="text-2xl font-semibold text-gray-900">{homes[0].name}</h1>
+						{#if $homes.length < 0}
+							<h1 class="text-2xl font-semibold text-gray-900">{$homes[0].name}</h1>
 						{:else}
 							<h1 class="text-2xl font-semibold text-gray-900">Dashboard</h1>
 						{/if}

@@ -26,7 +26,7 @@ public class SensorController : BaseApiController
 
     [HttpGet("{Id}")]
     [ProducesResponseType(typeof(Response<Sensor>), 200)]
-
+    [AllowAnonymous]
     public async Task<ActionResult> Get([FromRoute] GetSensorByIdQuery query)
     {
         return Ok(await Mediator.Send(query));
@@ -36,8 +36,9 @@ public class SensorController : BaseApiController
     [ProducesResponseType(typeof(Response<Sensor>), 200)]
     [AllowAnonymous]
 
-    public async Task<ActionResult> Post([FromBody] CreateSensorCommand command)
+    public async Task<ActionResult> Post()
     {
+        var command = new CreateSensorCommand(null);
         return Ok(await Mediator.Send(command));
     }
 

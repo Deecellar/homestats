@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { env } from '$env/dynamic/public';
-	import { Client, IConfig, RegisterRequest } from '$lib/clients';
+	import { ApiException, Client, IConfig, RegisterRequest } from '$lib/clients';
     import type { PageData } from './$types';
     
     export let data: PageData;
@@ -22,10 +22,40 @@
       let passwordValue = password.value;
       let confirmPasswordValue = confirmPassword.value;
       // We send the data to the API
-      await client.register(new RegisterRequest({firstName: usernameValue, email: emailValue, lastName: usernameValue, userName: usernameValue, password: passwordValue, confirmPassword: confirmPasswordValue}));
+      try {
+        await client.register(new RegisterRequest({firstName: usernameValue, email: emailValue, lastName: usernameValue, userName: usernameValue, password: passwordValue, confirmPassword: confirmPasswordValue}));
       goto('/login');
+      } catch (error : ApiException) {
+        showError(error.message);
+        console.error(error);
+      }
       
     }
+
+
+    function showError(message: string) {
+		let error = document.getElementById('error_message') as HTMLParagraphElement;
+		error.innerText = message;
+		const error_dialog = document.getElementById('error_dialog') as HTMLDialogElement;
+    // We remove opacity 100 and add opacity 0
+    error_dialog.classList.remove('opacity-100');
+    error_dialog.classList.add('opacity-0');
+		error_dialog.show();
+    // We add opacity 100 again 
+    error_dialog.classList.remove('opacity-0');
+    error_dialog.classList.add('opacity-100');
+    
+		// We close the dialog in a fade out animation
+		// in two seconds remove opacity
+		setTimeout(() => {
+			error_dialog.classList.remove('opacity-100');
+			error_dialog.classList.add('opacity-0');
+		}, 2000);
+
+		setTimeout(() => {
+			error_dialog.close();
+		}, 3000);
+	}
 
 
 </script>
@@ -94,5 +124,18 @@
         </div>
       </form>
     </div>
+    <dialog
+		id="error_dialog"
+		class="fixed -top-3/4 right-0 left-0  z-10 inset-0 overflow-y-auto   bg-red-600 transition-opacity ease-in-out duration-1000 opacity-100"
+		aria-labelledby="modal-title"
+		role="alert"
+		aria-modal="true"
+	>
+		<!-- Notification like dialog, -->
+		<div id="error_content" class="flex items-center justify-center text-center sm:block sm:p-0 rounded-md ">
+			<h1 id="error_title" class="text-red-300">Error en Login</h1>
+			<p id="error_message" class="text-red-200" />
+		</div>
+	</dialog>
   </div>
 

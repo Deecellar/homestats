@@ -45,8 +45,8 @@
         <div class="min-w-0 flex-1">
           <a href="/stats/home/create" class="focus:outline-none">
             <span class="absolute inset-0" aria-hidden="true"></span>
-            <p class="text-sm font-medium text-gray-900">Create New Home</p>
-            <p class="truncate text-sm text-gray-500">Create a new home</p>
+            <p class="text-sm font-medium text-gray-900">Crear nueva casa</p>
+            <p class="truncate text-sm text-gray-500">Crear nueva casa</p>
           </a>
         </div>
       </div>

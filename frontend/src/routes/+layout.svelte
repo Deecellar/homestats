@@ -6,6 +6,7 @@
     import '../app.postcss';
 	import type { Writable } from 'svelte/store';
 	import { onMount } from 'svelte';
+	import { setStorage } from '$lib/houseStore';
 	export let data: LayoutData;
 
   interface PrivacyPolicy {
@@ -16,6 +17,7 @@
    
    let auth: Writable<PrivacyPolicy>;
     onMount( async () => {
+      setStorage(localStorage);
     await authInit();  
     });
 

@@ -8,7 +8,7 @@
 		<nav class="mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8" aria-label="Global">
 		  <a href="/" class="-m-1.5 p-1.5">
 			<span class="sr-only">Compañia</span>
-			<img class="h-8 w-auto" src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=500" alt="">
+			<img class="h-8 w-auto" src="https://cdn-icons-png.flaticon.com/512/8775/8775336.png" alt="">
 		  </a>
 		  <div class="flex lg:hidden">
 			<button type="button" class="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-200">

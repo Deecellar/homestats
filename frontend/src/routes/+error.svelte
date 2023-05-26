@@ -14,10 +14,10 @@
     <div class="text-center">
       <p class="text-base font-semibold text-indigo-600">{$page.status}</p>
       <h1 class="mt-4 text-3xl font-bold tracking-tight text-gray-900 sm:text-5xl">{$page.error?.message}</h1>
-      <p class="mt-6 text-base leading-7 text-gray-600">Sorry, we couldn’t find the page you’re looking for or we are having issues</p>
+      <p class="mt-6 text-base leading-7 text-gray-600">¡Ups, parece que nos hemos perdido en el campo! No encontramos la página que estás buscando o estamos teniendo algunos problemitas. Pero no te preocupes, estamos en ello y pronto estaremos de vuelta en el camino correcto. ¡Intenta nuevamente más tarde y estaremos listos para ayudarte!</p>
       <div class="mt-10 flex items-center justify-center gap-x-6">
-        <a href="/" class="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Go back home</a>
-        <a href="/contact" class="text-sm font-semibold text-gray-900">Contact support <span aria-hidden="true">&rarr;</span></a>
+        <a href="/" class="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Ir a Página Principal</a>
+        <a href="/contact" class="text-sm font-semibold text-gray-900">Contactar soporte <span aria-hidden="true">&rarr;</span></a>
       </div>
     </div>
   </main>

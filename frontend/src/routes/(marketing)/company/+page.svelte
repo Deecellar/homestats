@@ -29,7 +29,7 @@
         </defs>
       </svg>
     <div class="mx-auto max-w-3xl text-base leading-7 text-gray-100">
-      <p class="text-base font-semibold leading-7 text-indigo-500">Introduciendo</p>
+      <p class="text-base font-semibold leading-7 text-indigo-500">¿Quiénes somos?</p>
       <h1 class="mt-2 text-3xl font-bold tracking-tight text-gray-50 sm:text-4xl">Sensoria Hogar</h1>
       <article class="prose lg:prose-xl tracking-tight prose-strong:text-gray-50 text-gray-50">
         {@html data.content}
